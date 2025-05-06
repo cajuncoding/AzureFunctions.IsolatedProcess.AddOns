@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Version>1.0.0</Version>
+		<Authors>BBernard / CajunCoding</Authors>
+		<Company>CajunCoding</Company>
+		<Description>Easily add response compression support, via middleware, for Azure Functions (Isolated Process) when using HttpResponseData.</Description>
+		<Copyright>Copyright © 2025</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>azure_functions_icon.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
+		<PackageReleaseNotes>
+			Release Notes:
+			- Initial Release
+		</PackageReleaseNotes>
+		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, HttpResponseData, HttpRequestData, Compression, Response Compression, Gzip, Brotli, Deflate</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
+	</ItemGroup>
+</Project>
