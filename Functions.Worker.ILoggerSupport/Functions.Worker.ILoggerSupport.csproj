@@ -4,17 +4,19 @@
 		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
 		<Description>Easily add ILogger (non-generic) support logging back into Azure Functions (Isolated Process) for improved DI, better de-coupling from generic types, improved code portability, etc.</Description>
 		<Copyright>Copyright © 2025</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>azure_functions_icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
 		<PackageReleaseNotes>
 			Release Notes:
+			- Add readme to Nuget
 			- Initial Release
 		</PackageReleaseNotes>
 		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, ILogger, IFunctionContextAccessor, FunctionContext</PackageTags>
@@ -25,8 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Link="README.md" />
-		<None Include="..\azure_functions_icon.png" Pack="true" Visible="true" PackagePath="" />
+		<None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+ 		<None Include="..\azure_functions_icon.png" Pack="true" Visible="true" PackagePath="" />
 	</ItemGroup>
 
 </Project>
