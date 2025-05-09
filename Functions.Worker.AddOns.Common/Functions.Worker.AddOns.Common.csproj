@@ -4,7 +4,7 @@
 		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<!--<Version>1.0.0</Version>-->
+		<Version>1.0.1</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
 		<Description>Easily add response Json response handling for POCO or DTO objects from plain vanilla Isolated Process Azure Functions. This reduces the need for full AspNetCore dependencies for simple APIs while also minimizing hte need to handle HttpResponseData manually in every function.</Description>
@@ -15,6 +15,7 @@
 		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
 		<PackageReleaseNotes>
 			Release Notes:
+			- Add readme to Nuget
 			- Initial Release
 		</PackageReleaseNotes>
 		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, HttpResponseData, HttpRequestData</PackageTags>
