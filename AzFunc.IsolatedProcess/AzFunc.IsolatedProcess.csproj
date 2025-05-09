@@ -22,6 +22,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Functions.Worker.HttpResponseDataCompression\Functions.Worker.HttpResponseDataCompression.csproj" />
+	  <ProjectReference Include="..\Functions.Worker.HttpResponseDataJsonMiddleware\Functions.Worker.HttpResponseDataJsonMiddleware.csproj" />
 	  <ProjectReference Include="..\Functions.Worker.ILoggerSupport\Functions.Worker.ILoggerSupport.csproj" />
 	</ItemGroup>
 	<ItemGroup>

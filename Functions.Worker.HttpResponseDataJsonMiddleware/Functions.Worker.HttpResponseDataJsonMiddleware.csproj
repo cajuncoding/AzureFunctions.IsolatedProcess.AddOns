@@ -7,7 +7,7 @@
 		<Version>1.0.0</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
-		<Description>Easily add response compression support, via middleware, for Azure Functions (Isolated Process) when using HttpResponseData.</Description>
+		<Description>Easily add response Json response handling for POCO or DTO objects from plain vanilla Isolated Process Azure Functions. This reduces the need for full AspNetCore dependencies for simple APIs while also minimizing hte need to handle HttpResponseData manually in every function.</Description>
 		<Copyright>Copyright © 2025</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>azure_functions_icon.png</PackageIcon>
@@ -17,7 +17,7 @@
 			Release Notes:
 			- Initial Release
 		</PackageReleaseNotes>
-		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, HttpResponseData, HttpRequestData, Compression, Response Compression, Gzip, Brotli, Deflate</PackageTags>
+		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, HttpResponseData, HttpRequestData, Json, POCO, ContentType, Content-Type, Encoding</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

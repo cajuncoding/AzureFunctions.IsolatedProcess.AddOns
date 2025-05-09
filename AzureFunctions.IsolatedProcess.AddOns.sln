@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.ILoggerSup
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.HttpResponseDataCompression", "Functions.Worker.HttpResponseDataCompression\Functions.Worker.HttpResponseDataCompression.csproj", "{3CEF22F3-1EF6-4679-8B16-847DD260B773}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.HttpResponseDataJsonMiddleware", "Functions.Worker.HttpResponseDataJsonMiddleware\Functions.Worker.HttpResponseDataJsonMiddleware.csproj", "{57D8F1BD-6811-415E-8B16-8B1F4BAA40AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.Common", "Functions.Worker.AddOns.Common\Functions.Worker.AddOns.Common.csproj", "{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{3CEF22F3-1EF6-4679-8B16-847DD260B773}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CEF22F3-1EF6-4679-8B16-847DD260B773}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CEF22F3-1EF6-4679-8B16-847DD260B773}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57D8F1BD-6811-415E-8B16-8B1F4BAA40AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57D8F1BD-6811-415E-8B16-8B1F4BAA40AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57D8F1BD-6811-415E-8B16-8B1F4BAA40AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57D8F1BD-6811-415E-8B16-8B1F4BAA40AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

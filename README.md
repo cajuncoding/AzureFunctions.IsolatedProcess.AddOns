@@ -67,7 +67,7 @@ NOTES:
 
 Add to your startup process in the `Program.cs` file:
 ```csharp
-//Required so that the FunctionContextAccessor Middleware is enabled!
+//Required so that the HttpResponseData Compression Middleware is enabled!
 .ConfigureFunctionsWorkerDefaults(app => app.UseHttpResponseDataCompression())
 ```
 and then you may optionally configure the compression levels for each type....
@@ -109,3 +109,50 @@ var host = Host
 await host.RunAsync().ConfigureAwait(false);
 ```
 
+## Functions.Worker.HttpResponseDataJsonMiddleware
+Easily add response Json response handling for POCO or DTO objects from plain vanilla Isolated Process Azure Functions. 
+This reduces the need for full AspNetCore dependencies for simple APIs while also minimizing hte need to handle HttpResponseData manually in every function.
+
+This provides a middleware for Azure Functions Worker (Isolated Process) to enable Json response handling of POCO or DTO objects when using only
+HttpRequestData/HttpResponseData (e.g. plain vanilla Azure Function Isolated Process).
+
+By enabling the easy addition of automatic Json response handling we reduces the need for full AspNetCore dependencies for simple APIs while 
+also minimizing hte need to handle HttpResponseData manually in every function. 
+
+In addition, this can be used in combination with the Functions.Worker.HttpResponseDataCompression (separate Nuget package) when added after the compression middleware is added.
+
+It works by handling the response of any Function that has an HttpTrigger binding, intercepting the invocation result and automatically serializing to Json anytime
+the result is not an HttpResponseData; thereby enabling full manual control anytime you want by returning the low level HttpResponseData.
+Otherwise, anytime a data model (POCO/DTO) is returned from the Function, then it will be rendered out as proper Json along with proper Content-Type and Encoding headers.
+
+NOTES: 
+ - The Azure Functions Isolated Process does handle POCO/DTO object responses unfortunately it does so awkwardly in that it encodes them as `text/plain` responses.
+ This violates good practices for a Json API so unfortunately we have to manually account for this behavior.
+
+### Usage
+
+Add to your startup process in the `Program.cs` file:
+```csharp
+//Required so that the Json Response Middleware is enabled!
+.ConfigureFunctionsWorkerDefaults(app => app.UseJsonResponses())
+```
+Full example of the startup process in `Program.cs`:
+```csharp
+using Microsoft.Extensions.Hosting;
+using System.IO.Compression;
+using Functions.Worker.HttpResponseDataCompression;
+
+var host = Host
+    .CreateDefaultBuilder()
+    .ConfigureFunctionsWorkerDefaults(app =>
+    {
+        //To use in combination with the Functions.Worker.HttpResponseDataCompression
+        //  simply initialize the compression middleware first...
+        app.UseHttpResponseDataCompression();
+        //Then add the Json response middleware...
+        app.UseJsonResponses();
+    })
+    .Build();
+
+await host.RunAsync().ConfigureAwait(false);
+```

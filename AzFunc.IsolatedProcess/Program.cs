@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using Functions.Worker.ContextAccessor;
 using Functions.Worker.HttpResponseDataCompression;
+using Functions.Worker.HttpResponseDataJsonMiddleware;
 using Functions.Worker.ILoggerSupport;
 using Microsoft.Extensions.Hosting;
 
@@ -9,13 +10,14 @@ var host = Host
     .ConfigureFunctionsWorkerDefaults(app =>
     {
         app
-            //.UseFunctionContextAccessor()
-            .UseHttpResponseDataCompression();
+            .UseFunctionContextAccessor()
+            .UseHttpResponseDataCompression()
+            .UseJsonResponses();
     })
     .ConfigureServices(svc =>
     {
         svc
-            //.AddFunctionILoggerSupport()
+            .AddFunctionILoggerSupport()
             .ConfigureHttpResponseDataCompression(opt =>
             {
                 opt.GzipCompressionLevel = CompressionLevel.SmallestSize;
