@@ -20,6 +20,7 @@ namespace Functions.Worker.AddOns.Common
         }
 
         public static ILogger? GetLogger(this FunctionContext? functionContext)
+            //TODO: Add support to create and cache in the FunctionContext Items so we don't have to re-initialize on every call...
             => functionContext?.GetLogger(functionContext.FunctionDefinition.Name);
 
         public static FunctionContext LogTrace(this FunctionContext functionContext, string message, params object?[] args)
