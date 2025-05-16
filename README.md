@@ -1,13 +1,25 @@
-# AzureFunctions.IsolatedProcess.AddOns
+﻿# AzureFunctions.IsolatedProcess.AddOns
 A repository of various add-ons for Azure Functions Isolated Process (e.g. Worker AddOns)
 
 Most are published as independent Nuget Packages for buffet style inclusion of whichever add-ons you need.
+
+### [Buy me a Coffee ☕](https://www.buymeacoffee.com/cajuncoding)
+*I'm happy to share with the community, but if you find this useful (e.g for professional use), and are so inclinded,
+then I do love-me-some-coffee!*
+
+<a href="https://www.buymeacoffee.com/cajuncoding" target="_blank">
+<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174">
+</a> 
+
 
 ## Functions.Worker.ILoggerSupport
 Easily add ILogger (non-generic) support logging back into Azure Functions (Isolated Process) for improved DI, 
 better de-coupling from generic types, improved code portability, etc.
 
 This is dependent on having valid DI support for the `FunctionContext` which is provided by the handy package [`Functions.Worker.ContextAccessor`](https://github.com/benrobot/Functions.Worker.ContextAccessor).
+
+### Nuget Package
+-  [Functions.Worker.ILoggerSupport NuGet package](https://www.nuget.org/packages/Functions.Worker.ILoggerSupport/)
 
 ### Usage
 
@@ -62,6 +74,9 @@ NOTES:
    be up and running very easily.  More Info here: https://github.com/Azure/azure-functions-host/pull/10870
  - This is not intended to be used in combination with Asp.Net Core integrated model which should likely use the existing Asp.Net Core Middleware.
    - But the Asp.Net Core middleware does not work when using HttpResponseData hence this middleware is necessary.
+
+### Nuget Package
+-  [Functions.Worker.HttpResponseDataCompression NuGet package](https://www.nuget.org/packages/Functions.Worker.HttpResponseDataCompression/)
 
 ### Usage
 
@@ -128,6 +143,9 @@ Otherwise, anytime a data model (POCO/DTO) is returned from the Function, then i
 NOTES: 
  - The Azure Functions Isolated Process does handle POCO/DTO object responses unfortunately it does so awkwardly in that it encodes them as `text/plain` responses.
  This violates good practices for a Json API so unfortunately we have to manually account for this behavior.
+
+### Nuget Package
+-  [Functions.Worker.HttpResponseDataJsonMiddleware NuGet package](https://www.nuget.org/packages/Functions.Worker.HttpResponseDataJsonMiddleware/)
 
 ### Usage
 
