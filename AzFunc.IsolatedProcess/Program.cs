@@ -1,8 +1,10 @@
 using System.IO.Compression;
+using AzFunc.IsolatedProcess;
 using Functions.Worker.ContextAccessor;
 using Functions.Worker.HttpResponseDataCompression;
 using Functions.Worker.HttpResponseDataJsonMiddleware;
 using Functions.Worker.ILoggerSupport;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = Host
@@ -23,7 +25,9 @@ var host = Host
                 opt.GzipCompressionLevel = CompressionLevel.SmallestSize;
                 opt.BrotliCompressionLevel= CompressionLevel.Fastest;
                 opt.DeflateCompressionLevel = CompressionLevel.SmallestSize;
-            });
+            })
+            .AddSingleton<TestILoggerSingleton>()
+            .AddScoped<TestILoggerScoped>();
     })
     .Build();
 
