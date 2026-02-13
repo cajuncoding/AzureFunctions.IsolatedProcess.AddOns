@@ -55,13 +55,14 @@ var host = Host
 
 await host.RunAsync().ConfigureAwait(false);
 ```
-### If your logs don't show in the console or Portal Stream...
+#### If your logs don't show in the console or Portal Stream...
 If your logs are not showing in the console (locally) or portal stream it may likely be due to some recent changes in the isolated process model Host functionality.
 It seems that some changes to the internal bits & bobs has now made it more strict and the standard `"Function": "Information"` line in your `host.json` may no
 longer be sufficient. Luckily the fix is easy, but unfortunately it may require long term upkeep if you rename your Functions.
 
-You now need to add explicit log level lines for each function. So for the sampel program in this GitHub we now have to add:
-`"Function.FunctionTestILogger": "Information"` to the host.json which now looks like:
+You now need to add explicit log level lines for each function in the format `"Function.{{FunctionNameFromFunctionAttribute}}": "Information"` (or whatever log level you like for that Function.
+
+So for the sample program in this GitHub we now have to add `"Function.FunctionTestILogger": "Information"` to the `host.json` which now looks like:
 ```json
 {
   "version": "2.0",
