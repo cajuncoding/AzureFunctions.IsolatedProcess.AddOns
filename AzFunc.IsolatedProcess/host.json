@@ -11,7 +11,8 @@
     "logLevel": {
       "default": "Warning",
       "Host.Results": "Information",
-      "Function": "Trace"
+      "Function": "Information",
+      "Function.FunctionTestILogger": "Information"
     }
   }
 }
