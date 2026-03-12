@@ -169,6 +169,10 @@ It works by handling the response of any Function that has an HttpTrigger bindin
 the result is not an HttpResponseData; thereby enabling full manual control anytime you want by returning the low level HttpResponseData.
 Otherwise, anytime a data model (POCO/DTO) is returned from the Function, then it will be rendered out as proper Json along with proper Content-Type and Encoding headers.
 
+Finally, the default behavior is to allow exceptions to bubble up -- potentially being handled by other middleware. However for may projects simplified automated
+error handling may be preferred, therefore there is an option to automatically catch exceptions and return them as standardized Json friendly responses. 
+This may be customized by providing a custom delegate when registring the firmware or for automated handling simply pass `handleExceptionsAutomatically: true`.
+
 NOTES: 
  - The Azure Functions Isolated Process does handle POCO/DTO object responses unfortunately it does so awkwardly in that it encodes them as `text/plain` responses.
  This violates good practices for a Json API so unfortunately we have to manually account for this behavior.
@@ -202,4 +206,17 @@ var host = Host
     .Build();
 
 await host.RunAsync().ConfigureAwait(false);
+```
+
+Or for customized exception handling you can provide a delegate with customized logic such as:
+```csharp
+app.UseJsonResponses((exc) => exc switch
+{
+    //We simply return the Exceptions to allow the JsonMiddleware to automitically convert the Exceptions to a standardized Json friendly format.
+    //Otherwise you can return any error model you like here and it'll be handled as an error with the specified HttpStatusCode.
+    FormatException => (HttpStatusCode.BadRequest, exc),
+    InvalidOperationException => (HttpStatusCode.Conflict, exc),
+    UnauthorizedAccessException => (HttpStatusCode.Unauthorized, exc),
+    _ => (HttpStatusCode.InternalServerError, exc)
+})
 ```

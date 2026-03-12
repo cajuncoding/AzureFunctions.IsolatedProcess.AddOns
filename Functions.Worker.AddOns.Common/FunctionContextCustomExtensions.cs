@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Functions.Worker.AddOns.Common
 {
@@ -13,11 +14,21 @@ namespace Functions.Worker.AddOns.Common
                 binding => binding.Type.Equals(HttpTriggerBindingTypeName, StringComparison.OrdinalIgnoreCase)
             ) ?? false;
 
-        public static async ValueTask<HttpResponseData?> GetOrCreateHttpResponseDataAsync(this FunctionContext? functionContext)
+        public static ValueTask<HttpResponseData?> GetOrCreateHttpResponseDataAsync(this FunctionContext? functionContext)
+            => GetOrCreateHttpResponseDataAsync(functionContext, HttpStatusCode.OK);
+
+        public static async ValueTask<HttpResponseData?> GetOrCreateHttpResponseDataAsync(this FunctionContext? functionContext, HttpStatusCode httpStatusCode)
         {
             if (functionContext is null) return null;
-            return functionContext.GetHttpResponseData() ?? (await functionContext.GetHttpRequestDataAsync().ConfigureAwait(false))?.CreateResponse();
+            return functionContext.GetHttpResponseData() ?? (await functionContext.CreateHttpResponseDataAsync(httpStatusCode));
         }
+
+        public static async ValueTask<HttpResponseData?> CreateHttpResponseDataAsync(this FunctionContext? functionContext, HttpStatusCode httpStatusCode)
+        {
+            if (functionContext is null) return null;
+            return (await functionContext.GetHttpRequestDataAsync().ConfigureAwait(false))?.CreateResponse(httpStatusCode);
+        }
+
 
         public static ILogger? GetLogger(this FunctionContext? functionContext)
             //TODO: Add support to create and cache in the FunctionContext Items so we don't have to re-initialize on every call...

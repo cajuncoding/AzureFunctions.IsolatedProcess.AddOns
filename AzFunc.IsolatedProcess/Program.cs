@@ -6,6 +6,7 @@ using Functions.Worker.HttpResponseDataJsonMiddleware;
 using Functions.Worker.ILoggerSupport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 
 var host = Host
     .CreateDefaultBuilder()
@@ -14,7 +15,16 @@ var host = Host
         app
             .UseFunctionContextAccessor()
             .UseHttpResponseDataCompression()
-            .UseJsonResponses();
+            //.UseJsonResponses();
+            .UseJsonResponses((exc) => exc switch
+            {
+                //We simply return the Exceptions to allow the JsonMiddleware to automitically convert the Exceptions to a standardized Json friendly format...
+                //Otherwise you can return any error model you like here and it'll be handled as an error with the specified HttpStatusCode.
+                FormatException => (HttpStatusCode.BadRequest, exc),
+                InvalidOperationException => (HttpStatusCode.Conflict, exc),
+                UnauthorizedAccessException => (HttpStatusCode.Unauthorized, exc),
+                _ => (HttpStatusCode.InternalServerError, exc)
+            });
     })
     .ConfigureServices(svc =>
     {
