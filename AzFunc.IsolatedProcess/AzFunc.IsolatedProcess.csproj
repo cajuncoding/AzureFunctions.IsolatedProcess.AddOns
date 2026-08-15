@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -10,14 +10,14 @@
 		<None Include="..\README.md" Link="README.md" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.22.2" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.24.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
-		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="3.1.2" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.51.0" />
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk.Analyzers" Version="1.2.2" />
 	</ItemGroup>
 	<ItemGroup>

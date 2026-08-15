@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace AzFunc.IsolatedProcess
 {
-    public class FunctionTestILogger(ILogger iLogger, TestILoggerSingleton singleton, TestILoggerScoped scoped)
+    public class TestILoggerFunctions(ILogger iLogger, TestILoggerSingleton singleton, TestILoggerScoped scoped)
     {
-        [Function(nameof(FunctionTestILogger))]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
+        [Function(nameof(TestILoggerFunction))]
+        public async Task<HttpResponseData> TestILoggerFunction([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
         {
             var message = $"[{DateTime.Now:O}] C# HTTP trigger function processed a request and Logged using non-generic ILogger 🚀 successfully ✅";
             iLogger.LogInformation(message);

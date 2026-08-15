@@ -6,10 +6,10 @@ using Microsoft.Extensions.Logging;
 
 namespace AzFunc.IsolatedProcess
 {
-    public class FunctionTestResponseCompression(ILogger iLogger)
+    public class TestHttpResponseCompressionFunctions(ILogger iLogger)
     {
-        [Function(nameof(FunctionTestResponseCompression))]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
+        [Function(nameof(TestHttpResponseCompressionFunction))]
+        public async Task<HttpResponseData> TestHttpResponseCompressionFunction([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
         {
             var byteSize = (int)ByteSize.FromMegabytes(3.0);
             iLogger.LogInformation($"[{DateTime.Now:O}] Generating Large Text Data Payload of ~[{byteSize:0} MB] . . . ");

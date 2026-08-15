@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net10.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
 		<Description>Easily add response Json response handling for POCO or DTO objects from plain vanilla Isolated Process Azure Functions. This reduces the need for full AspNetCore dependencies for simple APIs while also minimizing hte need to handle HttpResponseData manually in every function.</Description>
@@ -15,9 +15,11 @@
 		<PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
 		<PackageReleaseNotes>
-      - Add support for customized exception handling in the middleware to enforce Json responses, and consumer customization, by supplying a JsonMiddlewareExceptionHandler delegate (e.g. Func).
+      - Update to support .NET 10.0 and .NET 8.0 Isolated Process Azure Functions.
+      - Sync all AddOns packages to the same version v1.2.0
 
-			Previous Release Notes:
+      Previous Release Notes:
+      - Add support for customized exception handling in the middleware to enforce Json responses, and consumer customization, by supplying a JsonMiddlewareExceptionHandler delegate (e.g. Func).
       - Fix reference issues preventing deployment/publish to Azure Portal due to Error NETSDK1152.
       - Add readme to Nuget
       - Initial Release
@@ -26,7 +28,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="2.52.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net10.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>1.0.3</Version>
+		<Version>1.2.0</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
 		<Description>Easily add ILogger (non-generic) support logging back into Azure Functions (Isolated Process) for improved DI, better de-coupling from generic types, improved code portability, etc.</Description>
@@ -15,13 +15,15 @@
 		<PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
 		<PackageReleaseNotes>
-			- Improve support for more easily consuming ILogger in all DI contexts including Singletons, Scoped classes, etc...
+      - Update to support .NET 10.0 and .NET 8.0 Isolated Process Azure Functions.
+      - Sync all AddOns packages to the same version v1.2.0
 
-			Previous Release Notes:
-			- Fix reference issues preventing deployment/publish to Azure Portal due to Error NETSDK1152.
-			- Add readme to Nuget
-			- Initial Release
-		</PackageReleaseNotes>
+      Previous Release Notes:
+      - Improve support for more easily consuming ILogger in all DI contexts including Singletons, Scoped classes, etc...
+      - Fix reference issues preventing deployment/publish to Azure Portal due to Error NETSDK1152.
+      - Add readme to Nuget
+      - Initial Release
+    </PackageReleaseNotes>
 		<PackageTags>Azure, Functions, Azure Function, Worker, Isolated, Isolated Process Model, ILogger, IFunctionContextAccessor, FunctionContext</PackageTags>
 	</PropertyGroup>
 

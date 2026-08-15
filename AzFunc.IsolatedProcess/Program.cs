@@ -33,7 +33,7 @@ var host = Host
             .ConfigureHttpResponseDataCompression(opt =>
             {
                 opt.GzipCompressionLevel = CompressionLevel.SmallestSize;
-                opt.BrotliCompressionLevel= CompressionLevel.Fastest;
+                opt.BrotliCompressionLevel = CompressionLevel.Fastest;
                 opt.DeflateCompressionLevel = CompressionLevel.SmallestSize;
             })
             .AddSingleton<TestILoggerSingleton>()

@@ -5,7 +5,7 @@ using System.Net;
 
 namespace AzFunc.IsolatedProcess
 {
-    public class FunctionTestJsonResponse(ILogger iLogger)
+    public class TestJsonResponseFunctions()
     {
         private static int _callCounter = 0;
 

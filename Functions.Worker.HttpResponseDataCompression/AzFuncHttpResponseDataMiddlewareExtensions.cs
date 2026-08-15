@@ -6,7 +6,7 @@ namespace Functions.Worker.HttpResponseDataCompression
 {
     public static class AzFuncHttpResponseDataMiddlewareExtensions
     {
-        public static IFunctionsWorkerApplicationBuilder UseHttpResponseDataCompression(this IFunctionsWorkerApplicationBuilder app, Action<HttpResponseDataCompressionOptions> configAction = null)
+        public static IFunctionsWorkerApplicationBuilder UseHttpResponseDataCompression(this IFunctionsWorkerApplicationBuilder app, Action<HttpResponseDataCompressionOptions>? configAction = null)
             => app.UseMiddleware<HttpResponseDataCompressionMiddleware>();
 
         public static IServiceCollection ConfigureHttpResponseDataCompression(this IServiceCollection svc, Action<HttpResponseDataCompressionOptions> configAction)
