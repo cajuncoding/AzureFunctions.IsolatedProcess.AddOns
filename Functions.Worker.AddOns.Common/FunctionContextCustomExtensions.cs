@@ -2,6 +2,7 @@
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Security.Claims;
 
 namespace Functions.Worker.AddOns.Common
 {
@@ -29,7 +30,6 @@ namespace Functions.Worker.AddOns.Common
             return (await functionContext.GetHttpRequestDataAsync().ConfigureAwait(false))?.CreateResponse(httpStatusCode);
         }
 
-
         public static ILogger? GetLogger(this FunctionContext? functionContext)
             //TODO: Add support to create and cache in the FunctionContext Items so we don't have to re-initialize on every call...
             => functionContext?.GetLogger(functionContext.FunctionDefinition.Name);
@@ -55,6 +55,13 @@ namespace Functions.Worker.AddOns.Common
         {
             functionContext.GetLogger()?.LogError(exc, message, args);
             return functionContext;
+        }
+
+        public static async Task<string?> GetFunctionKeyNameAsync(this FunctionContext? functionContext)
+        {
+            if (functionContext is null) return null;
+            HttpRequestData? httpRequestData = await functionContext.GetHttpRequestDataAsync().ConfigureAwait(false);
+            return httpRequestData.GetFunctionKeyName();
         }
     }
 }
