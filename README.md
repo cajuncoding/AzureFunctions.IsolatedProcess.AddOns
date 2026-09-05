@@ -195,14 +195,26 @@ using Functions.Worker.HttpResponseDataCompression;
 
 var host = Host
     .CreateDefaultBuilder()
-    .ConfigureFunctionsWorkerDefaults(app =>
-    {
-        //To use in combination with the Functions.Worker.HttpResponseDataCompression
-        //  simply initialize the compression middleware first...
-        app.UseHttpResponseDataCompression();
-        //Then add the Json response middleware...
-        app.UseJsonResponses();
-    })
+    .ConfigureFunctionsWorkerDefaults(
+        app =>
+        {
+            //To use in combination with the Functions.Worker.HttpResponseDataCompression
+            //  simply initialize the compression middleware first...
+            app.UseHttpResponseDataCompression();
+            //Then add the Json response middleware...
+            app.UseJsonResponses();
+        },
+        configureOptions: worker =>
+        {
+            //Configure the Azure Function Worker (built-in) JSON Serializer to use our Default Serializer Settings for consistency across the board!
+            worker.Serializer = new JsonObjectSerializer(new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                //Enforce proper camelCasing responses as industry standard (vs C# Pascal Casing standard)!
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never
+            });
+        }
+    )
     .Build();
 
 await host.RunAsync().ConfigureAwait(false);
