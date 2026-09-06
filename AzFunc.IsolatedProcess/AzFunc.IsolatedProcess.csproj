@@ -21,6 +21,8 @@
 		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk.Analyzers" Version="1.2.2" />
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.csproj" />
+		<ProjectReference Include="..\Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.Generators\Functions.Worker.AddOns.MiniApiRouting.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	  <ProjectReference Include="..\Functions.Worker.HttpResponseDataCompression\Functions.Worker.HttpResponseDataCompression.csproj" />
 	  <ProjectReference Include="..\Functions.Worker.HttpResponseDataJsonMiddleware\Functions.Worker.HttpResponseDataJsonMiddleware.csproj" />
 	  <ProjectReference Include="..\Functions.Worker.ILoggerSupport\Functions.Worker.ILoggerSupport.csproj" />
