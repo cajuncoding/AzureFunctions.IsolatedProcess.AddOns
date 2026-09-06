@@ -43,7 +43,7 @@ MiniApiRouting enables:
 ## Goals
 
 - Preserve Azure Functions isolated-worker hosting, middleware, DI, authorization, and keys.
-- Support default and named Mini APIs in the same app.
+- Support default and named/grouped Mini APIs in the same app (multiple MiniApi Functions can co-exist).
 - Generate routing, binding, dispatch, and DI registration at compile time.
 - Avoid manual switches, dictionaries, runtime discovery, reflection, or assembly scanning.
 
