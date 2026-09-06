@@ -2,10 +2,16 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>0.1.0-preview.1</Version>
+    <Version>1.0.0</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
+    <PackageReleaseNotes>
+      - Initial v1.0 release of Functions.Worker.AddOns.MiniApiRouting.
+      - Functions.Worker.AddOns.MiniApiRouting is a Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!
+      - Supports route, query-string, header, and JSON request-body binding.
+      - Supports multiple Mini APIs, generated dispatch, DI registration, diagnostics, and flexible handler return values.
+    </PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
