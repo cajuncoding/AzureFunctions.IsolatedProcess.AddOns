@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using System.IO.Compression;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var host = Host
     .CreateDefaultBuilder()
@@ -35,7 +36,9 @@ var host = Host
             //Configure the Azure Function Worker (built-in) Json Serializer to use camelCase for consistency across the board!
             worker.Serializer = new JsonObjectSerializer(new JsonSerializerOptions()
             {
+                //Enforce proper camelCasing responses as industry standard (vs C# Pascal Casing standard)!
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never
             });
         }
     )
