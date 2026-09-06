@@ -6,6 +6,17 @@ Compile-time generated Mini APIs for Azure Functions isolated worker.
 
 MiniApiRouting lets one Azure Function host a logical group of HTTP routes while keeping the isolated-worker programming model. Route handlers are ordinary methods discovered by a source generator and dispatched by generated code.
 
+### Give Star 🌟
+**If you like this project and/or use it the please give it a Star 🌟 (c'mon it's free, and it'll help others find the project)!**
+
+### [Buy me a Coffee ☕](https://www.buymeacoffee.com/cajuncoding)
+*I'm happy to share with the community, but if you find this useful (e.g for professional use), and are so inclinded,
+then I do love-me-some-coffee!*
+
+<a href="https://www.buymeacoffee.com/cajuncoding" target="_blank">
+<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174">
+</a> 
+
 ## Why this package exists
 
 A logical API often needs several routes but one authorization boundary. Creating one Function per route forces consumers to manage several equivalent function keys or move to broader host-level keys. MiniApiRouting allows related routes to share one Function, one authorization level, and one function key.
