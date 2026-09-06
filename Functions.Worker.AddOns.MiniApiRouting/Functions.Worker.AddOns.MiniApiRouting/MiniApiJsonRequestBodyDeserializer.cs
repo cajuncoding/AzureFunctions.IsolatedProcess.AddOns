@@ -7,6 +7,8 @@ namespace Functions.Worker.AddOns.MiniApiRouting;
 
 public sealed class MiniApiJsonRequestBodyDeserializer : IMiniApiRequestBodyDeserializer
 {
+    private const string JsonContentType = "application/json";
+
     private readonly ObjectSerializer _serializer;
 
     public MiniApiJsonRequestBodyDeserializer(IOptions<WorkerOptions> options)
@@ -18,9 +20,6 @@ public sealed class MiniApiJsonRequestBodyDeserializer : IMiniApiRequestBodyDese
     {
         if (!request.Headers.TryGetValues("Content-Type", out var contentTypes) || !contentTypes.Any(IsJsonContentType))
             throw new MiniApiUnsupportedContentTypeException(contentTypes?.FirstOrDefault());
-
-        if (request.Body.CanSeek && request.Body.Length == request.Body.Position)
-            throw new MiniApiParameterBindingException("requestBody", targetType, null, "body");
 
         try
         {
@@ -35,7 +34,7 @@ public sealed class MiniApiJsonRequestBodyDeserializer : IMiniApiRequestBodyDese
     private static bool IsJsonContentType(string contentType)
     {
         var mediaType = contentType.Split(';', 2)[0].Trim();
-        return mediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase)
-            || mediaType.StartsWith("application/", StringComparison.OrdinalIgnoreCase) && mediaType.EndsWith("+json", StringComparison.OrdinalIgnoreCase);
+        return mediaType.Equals(JsonContentType, StringComparison.OrdinalIgnoreCase)
+            || (mediaType.StartsWith("application/", StringComparison.OrdinalIgnoreCase) && mediaType.EndsWith("+json", StringComparison.OrdinalIgnoreCase));
     }
 }

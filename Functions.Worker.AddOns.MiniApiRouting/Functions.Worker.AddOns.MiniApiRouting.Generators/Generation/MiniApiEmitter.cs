@@ -33,7 +33,7 @@ internal static class MiniApiEmitter
 
         namespace Functions.Worker.AddOns.MiniApiRouting;
 
-        public sealed class GeneratedMiniApiRouter(IServiceProvider services, IMiniApiRequestBodyDeserializer bodyDeserializer) : IMiniApiRouter
+        internal sealed class GeneratedMiniApiRouter : IMiniApiRouter
         {
         """);
     }
@@ -59,8 +59,6 @@ internal static class MiniApiEmitter
         source.AppendLines("""
             public ValueTask<object?> DispatchAsync(HttpRequestData request, string? relativePath = null, CancellationToken cancellationToken = default)
             {
-                _ = services;
-                _ = bodyDeserializer;
                 var group = ResolveGroup(request.FunctionContext.FunctionDefinition.Name);
                 var path = (relativePath ?? request.Url.AbsolutePath).Trim('/');
                 var segments = string.IsNullOrEmpty(path) ? Array.Empty<string>() : path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -69,6 +67,7 @@ internal static class MiniApiEmitter
 
             private async ValueTask<object?> DispatchCoreAsync(string group, HttpRequestData request, string path, string[] segments, CancellationToken cancellationToken)
             {
+                var services = request.FunctionContext.InstanceServices;
         """);
 
         for (var index = 0; index < routes.Count; index++)
@@ -93,6 +92,7 @@ internal static class MiniApiEmitter
         {
             var nullableBodySuffix = bodyParameter.IsNullable ? "?" : string.Empty;
             var nullForgivingSuffix = bodyParameter.IsNullable ? string.Empty : "!";
+            source.AppendLine($"            var bodyDeserializer = services.GetRequiredService<IMiniApiRequestBodyDeserializer>();");
             source.AppendLine($"            var body = ({bodyParameter.TypeName}{nullableBodySuffix})(await bodyDeserializer.DeserializeAsync(request, typeof({bodyParameter.TypeName}), cancellationToken)){nullForgivingSuffix};");
         }
 
@@ -115,13 +115,13 @@ internal static class MiniApiEmitter
     private static void AppendServiceRegistration(StringBuilder source, IEnumerable<RouteModel> routes)
     {
         source.AppendLines("""
-        public static class GeneratedMiniApiServiceRegistration
+        internal static class GeneratedMiniApiServiceRegistration
         {
             [ModuleInitializer]
             public static void Register()
                 => MiniApiServiceCollectionExtensions.RegisterGeneratedMiniApiRouting(AddGeneratedMiniApiRouting);
 
-            public static IServiceCollection AddGeneratedMiniApiRouting(IServiceCollection services)
+            internal static IServiceCollection AddGeneratedMiniApiRouting(IServiceCollection services)
             {
         """);
 

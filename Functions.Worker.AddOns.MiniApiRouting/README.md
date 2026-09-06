@@ -10,6 +10,25 @@ MiniApiRouting lets one Azure Function host a logical group of HTTP routes while
 
 A logical API often needs several routes but one authorization boundary. Creating one Function per route forces consumers to manage several equivalent function keys or move to broader host-level keys. MiniApiRouting allows related routes to share one Function, one authorization level, and one function key.
 
+## Why not one Function per route?
+
+Azure Functions encourages one Function per endpoint.
+
+That works well for many APIs but can become cumbersome when a logical API surface contains numerous related routes that should share the same authorization boundary and Function Key.
+
+MiniApiRouting enables:
+
+- One Function
+- One Function Key
+- Many Routes
+- Compile-time validation
+- Compile-time dispatch generation for routing runtime performance
+- Ultra lightweight footprint with 'plain vanilla' Azure Functions isolated worker hosting
+- No Assembly scanning, reflection, or runtime discovery
+- No runtime route-discovery cold-start penalty
+
+... all while preserving the Azure Functions isolated-worker model.
+
 ## Goals
 
 - Preserve Azure Functions isolated-worker hosting, middleware, DI, authorization, and keys.
@@ -44,7 +63,8 @@ The package includes the runtime library and generator analyzer. Consumers insta
 builder.Services.AddFunctionsMiniApiRouting();
 ```
 
-The generated extension registers route handler classes with `TryAddTransient`, `IMiniApiRouter` with `TryAddSingleton`, and `IMiniApiRequestBodyDeserializer` with `TryAddSingleton`.
+`AddFunctionsMiniApiRouting()` registers the default `IMiniApiRequestBodyDeserializer` and applies the source-generated registrations for RouteHandler classes and `IMiniApiRouter`.
+Generated registrations use `TryAddTransient` and `TryAddSingleton`, allowing applications to provide explicit registrations when needed.
 
 ## Async-first Widget API example
 
@@ -54,7 +74,7 @@ internal static class MiniApis
     internal const string Widgets = "widgets";
 }
 
-[MiniApi(MiniApis.Widgets)]
+[MiniApi]
 internal sealed class WidgetRouteHandlers(IWidgetService widgetService)
 {
     [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId:int}")]
@@ -73,7 +93,7 @@ Use `[MiniApi]` and `[MiniApiFunction]` without a name for the default group.
 
 ## Named Mini API example
 
-Use constants with `[MiniApi(MiniApis.Widgets)]` and `[MiniApiFunction(MiniApis.Widgets)]`. Group names are never inferred from class names.
+Use API grouping names (constants make this clean) with `[MiniApi(MiniApis.Widgets)]` and `[MiniApiFunction(MiniApis.Widgets)]`. Group names are never inferred from class names.
 
 ## Multiple Mini APIs and Functions example
 
@@ -85,9 +105,12 @@ Several classes can contribute handlers to the same group, and several Functions
 internal sealed class WidgetFunction(IMiniApiRouter router)
 {
     [Function(nameof(WidgetFunction))]
-    [MiniApiFunction(MiniApis.Widgets)]
-    public ValueTask<object?> RunAsync(HttpRequestData request, string? path, CancellationToken cancellationToken)
-        => router.DispatchAsync(request, path, cancellationToken);
+    [MiniApiFunction]
+    public ValueTask<object?> RunAsync(
+        [HttpTrigger(AuthorizationLevel.Function, MiniApiVerbs.Get, MiniApiVerbs.Post, Route = "widgets/{*path}")] HttpRequestData request,
+        string? path,
+        CancellationToken cancellationToken
+    ) => router.DispatchAsync(request, path, cancellationToken);
 }
 ```
 
@@ -175,4 +198,4 @@ dotnet pack -c Release --no-build
 
 ## Current release status
 
-Preview implementation under active validation.
+Initial implementation released under active validation in production use cases.

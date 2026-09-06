@@ -2,6 +2,7 @@ using AzFunc.IsolatedProcess.MiniApiRoutes;
 using Functions.Worker.AddOns.MiniApiRouting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AzFunc.IsolatedProcess;
 
@@ -18,6 +19,11 @@ public sealed class TestMiniApiRoutingFunctions(IMiniApiRouter router)
         )]
         HttpRequestData request,
         string? path,
+        FunctionContext ctx,
         CancellationToken cancellationToken
-    ) => router.DispatchAsync(request, path, cancellationToken);
+    )
+    {
+        ctx.InstanceServices.GetService<IMiniApiRouter>();
+        return router.DispatchAsync(request, path, cancellationToken);
+    }
 }

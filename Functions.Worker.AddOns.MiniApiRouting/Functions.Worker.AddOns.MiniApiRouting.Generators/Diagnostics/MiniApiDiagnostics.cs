@@ -31,7 +31,7 @@ internal static class MiniApiDiagnostics
     internal static readonly DiagnosticDescriptor InvalidOptionalOrder = Create(
         "MAR005",
         "Invalid optional route order",
-        "Required route parameter '{0}' cannot follow an optional route parameter."
+        "Required route segment '{0}' cannot follow an optional route parameter."
     );
 
     internal static readonly DiagnosticDescriptor MissingMiniApiFunction = Create(

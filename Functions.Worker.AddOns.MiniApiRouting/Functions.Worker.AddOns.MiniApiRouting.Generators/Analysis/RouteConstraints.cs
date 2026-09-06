@@ -4,11 +4,11 @@ internal static class RouteConstraints
 {
     internal static readonly IReadOnlyList<RouteConstraintDefinition> SupportedRouteConstraints = new[]
     {
-        new RouteConstraintDefinition("int", GeneratedCodeReferences.TryParseExpression(GeneratedCodeReferences.IntegerType)),
-        new RouteConstraintDefinition("long", GeneratedCodeReferences.TryParseExpression(GeneratedCodeReferences.LongType)),
-        new RouteConstraintDefinition("guid", GeneratedCodeReferences.TryParseExpression(GeneratedCodeReferences.GuidType)),
-        new RouteConstraintDefinition("bool", GeneratedCodeReferences.TryParseExpression(GeneratedCodeReferences.BooleanType)),
-        new RouteConstraintDefinition("decimal", GeneratedCodeReferences.DecimalTryParseExpression())
+        new RouteConstraintDefinition("int", GeneratedCodeConstants.GenerateTryParseExpression(GeneratedCodeConstants.IntegerType)),
+        new RouteConstraintDefinition("long", GeneratedCodeConstants.GenerateTryParseExpression(GeneratedCodeConstants.LongType)),
+        new RouteConstraintDefinition("guid", GeneratedCodeConstants.GenerateTryParseExpression(GeneratedCodeConstants.GuidType)),
+        new RouteConstraintDefinition("bool", GeneratedCodeConstants.GenerateTryParseExpression(GeneratedCodeConstants.BooleanType)),
+        new RouteConstraintDefinition("decimal", GeneratedCodeConstants.GenerateDecimalTryParseExpression())
     };
 
     private static readonly HashSet<string> SupportedRouteConstraintNames = new HashSet<string>(

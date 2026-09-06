@@ -1,9 +1,9 @@
-using System.Collections.Immutable;
 using Functions.Worker.AddOns.MiniApiRouting.Generators;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Functions.Worker.AddOns.MiniApiRouting.Generator.Tests;
@@ -15,12 +15,22 @@ public sealed class MiniApiRoutingGeneratorTests
     public void ReportsExpectedDiagnostic(string diagnosticId, string source)
     {
         var result = RunGenerator(source);
-        var diagnostics = result.Diagnostics.Where(diagnostic => diagnostic.Id == diagnosticId).ToArray();
-        var diagnostic = Assert.Single(diagnostics.Take(1));
 
-        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.False(string.IsNullOrWhiteSpace(diagnostic.GetMessage()));
-        Assert.NotEqual(Location.None, diagnostic.Location);
+        var diagnostics = result.Diagnostics
+            .Where(diagnostic => diagnostic.Id == diagnosticId)
+            .ToArray();
+
+        Assert.NotEmpty(diagnostics);
+
+        Assert.All(
+            diagnostics,
+            diagnostic =>
+            {
+                Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+                Assert.False(string.IsNullOrWhiteSpace(diagnostic.GetMessage()));
+                Assert.NotEqual(Location.None, diagnostic.Location);
+            }
+        );
     }
 
     [Fact]
@@ -58,12 +68,13 @@ public sealed class MiniApiRoutingGeneratorTests
         Assert.Empty(result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
         var generated = Assert.Single(result.GeneratedSources.Where(source => source.HintName == "MiniApiGenerated.g.cs"));
         var text = generated.SourceText.ToString();
-        Assert.Contains("public sealed class GeneratedMiniApiRouter", text);
+        Assert.Contains("internal sealed class GeneratedMiniApiRouter", text);
         Assert.Contains("TryMatch", text);
-        Assert.Contains("public static class GeneratedMiniApiServiceRegistration", text);
+        Assert.Contains("internal static class GeneratedMiniApiServiceRegistration", text);
         Assert.Contains("[ModuleInitializer]", text);
         Assert.Contains("MiniApiServiceCollectionExtensions.RegisterGeneratedMiniApiRouting(AddGeneratedMiniApiRouting)", text);
         Assert.Contains("AddGeneratedMiniApiRouting", text);
+        Assert.Contains("request.FunctionContext.InstanceServices", text);
         Assert.Contains("services.TryAddSingleton<IMiniApiRouter, GeneratedMiniApiRouter>()", text);
         Assert.Contains("new MiniApiGeneratedRouteSegment(\"{id:int}\"", text);
         Assert.DoesNotContain("new MiniApiGeneratedRouteSegment(\"/{id:int}\"", text);
@@ -109,6 +120,76 @@ public sealed class MiniApiRoutingGeneratorTests
 
         Assert.Empty(result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
         Assert.Contains(result.GeneratedSources, source => source.HintName == "MiniApiGenerated.g.cs");
+    }
+
+    [Fact]
+    public void LiteralAfterOptionalRouteParameterReportsMAR005()
+    {
+        var source = $$"""
+        {{Header}}
+
+        [MiniApi]
+        internal sealed class WidgetHandlers
+        {
+            [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId}/details")]
+            public static string GetWidgetDetails(string? widgetId = null)
+                => "ok";
+        }
+        """;
+
+        var result = RunGenerator(source);
+
+        Assert.Contains(result.Diagnostics, diagnostic => diagnostic.Id == "MAR005");
+    }
+
+    [Fact]
+    public void TerminalOptionalRouteParameterDoesNotReportMAR005()
+    {
+        var source = $$"""
+        {{Header}}
+
+        [MiniApi]
+        internal sealed class WidgetHandlers
+        {
+            [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId}")]
+            public static string GetWidget(string? widgetId = null)
+                => "ok";
+        }
+        """;
+
+        var result = RunGenerator(source);
+
+        Assert.DoesNotContain(result.Diagnostics, diagnostic => diagnostic.Id == "MAR005");
+    }
+
+    [Fact]
+    public void OptionalRouteParameterConflictingWithRootRouteReportsMAR002()
+    {
+        var source = $$"""
+        {{Header}}
+
+        [MiniApi]
+        internal sealed class WidgetHandlers
+        {
+            [MiniApiRouteHandler(MiniApiVerbs.Get)]
+            public static string GetWidgets()
+                => "ok";
+
+            [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId}")]
+            public static string GetWidget(string? widgetId = null)
+                => "ok";
+        }
+        """;
+
+        var result = RunGenerator(source);
+
+        var diagnostics = result.Diagnostics
+            .Where(diagnostic => diagnostic.Id == "MAR002")
+            .ToArray();
+
+        // The generator reports MAR002 against both conflicting handlers:
+        // GET "" and GET "/{widgetId}".
+        Assert.Equal(2, diagnostics.Length);
     }
 
     public static IEnumerable<object[]> DiagnosticCases()

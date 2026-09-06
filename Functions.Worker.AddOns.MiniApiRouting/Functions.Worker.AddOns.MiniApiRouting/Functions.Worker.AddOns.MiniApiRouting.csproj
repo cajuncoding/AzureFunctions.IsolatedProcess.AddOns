@@ -2,11 +2,20 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
     <PackageReleaseNotes>
+      - Improved DI lifetime handling using FunctionContext.InstanceServices
+      - Fixed optional route validation edge cases
+      - Removed unnecessary request body stream-position checks
+      - Internalized generated infrastructure types
+      - Added regression tests for optional route expansion and route conflicts
+      - Improved generator validation and test coverage
+      - README updates and documentation refinements
+      
+      Prior Releas Notes:
       - Initial v1.0 release of Functions.Worker.AddOns.MiniApiRouting.
       - Functions.Worker.AddOns.MiniApiRouting is a Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!
       - Supports route, query-string, header, and JSON request-body binding.

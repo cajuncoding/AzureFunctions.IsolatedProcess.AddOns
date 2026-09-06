@@ -128,7 +128,7 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.RouteTokenWithoutBinding, route.Location, token));
 
         var optionalRouteSeen = false;
-        foreach (var segment in route.Segments.Where(segment => segment.IsParameter))
+        foreach (var segment in route.Segments)
         {
             if (segment.IsOptional)
             {
@@ -158,16 +158,17 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
             && !route.IsInvalidMethod
             && ValidVerbs.Contains(route.Verb)
             && route.TemplateDiagnostics.Count == 0
+            && !HasInvalidOptionalOrder(route)
             && route.Parameters.All(parameter => !parameter.HasBindingConflict && !parameter.IsFrameworkBody && !parameter.HasUnsupportedCollectionElement && !parameter.IsUnbound)
             && route.Parameters.Count(parameter => parameter.Source == BindingSource.Body) <= 1;
 
     private static bool IsValidForEmission(RouteModel route)
-        => IsValidForDuplicateAnalysis(route) && !HasInvalidOptionalOrder(route) && !HasRouteTokenWithoutBinding(route);
+        => IsValidForDuplicateAnalysis(route) && !HasRouteTokenWithoutBinding(route);
 
     private static bool HasInvalidOptionalOrder(RouteModel route)
     {
         var optionalRouteSeen = false;
-        foreach (var segment in route.Segments.Where(segment => segment.IsParameter))
+        foreach (var segment in route.Segments)
         {
             if (segment.IsOptional)
                 optionalRouteSeen = true;
