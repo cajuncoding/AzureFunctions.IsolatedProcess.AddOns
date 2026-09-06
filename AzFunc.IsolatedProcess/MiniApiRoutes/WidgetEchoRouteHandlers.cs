@@ -7,7 +7,7 @@ namespace AzFunc.IsolatedProcess.MiniApiRoutes;
 [MiniApi(MiniApis.WidgetsApi)]
 internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> logger)
 {
-    [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId:int}")]
+    [MiniApiGet("/{widgetId:int}")]
     public async Task<WidgetDto> EchoWidgetIdAsync(
         int widgetId,
         string? material = null,
@@ -34,7 +34,7 @@ internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> l
         );
     }
 
-    [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetName}")]
+    [MiniApiGet("/{widgetName}")]
     public async Task<WidgetDto> EchoWidgetNameAsync(
         string widgetName,
         string? material = null,
@@ -59,7 +59,7 @@ internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> l
         );
     }
 
-    [MiniApiRouteHandler(MiniApiVerbs.Post, "/{widgetId:int}")]
+    [MiniApiPost("/{widgetId:int}")]
     public async Task<WidgetDto> EchoWidgetBodyAsync(
         int widgetId,
         WidgetEchoRequest request,
@@ -91,7 +91,7 @@ internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> l
 [MiniApi(MiniApis.WidgetsApi)]
 internal static class WidgetHealthRouteHandlers
 {
-    [MiniApiRouteHandler(MiniApiVerbs.Get, "/health", Priority = 0)]
+    [MiniApiGet("/health", Priority = 0)]
     public static object GetHealth()
         => new // Sync or async methods are fine... ✅
         {

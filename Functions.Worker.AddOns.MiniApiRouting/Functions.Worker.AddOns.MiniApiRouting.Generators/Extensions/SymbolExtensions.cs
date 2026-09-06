@@ -61,6 +61,19 @@ internal static class SymbolExtensions
     private static string GetMetadataTypeName(this ITypeSymbol type)
         => type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty);
 
+    internal static bool InheritsFrom(this INamedTypeSymbol? type, string metadataName)
+    {
+        while (type is not null)
+        {
+            if (type.ToDisplayString() == metadataName)
+                return true;
+
+            type = type.BaseType;
+        }
+
+        return false;
+    }
+
     private static readonly HashSet<string> WellKnownScalarTypeNames = new(StringComparer.Ordinal)
     {
         WellKnownMetadataNames.SystemGuid,

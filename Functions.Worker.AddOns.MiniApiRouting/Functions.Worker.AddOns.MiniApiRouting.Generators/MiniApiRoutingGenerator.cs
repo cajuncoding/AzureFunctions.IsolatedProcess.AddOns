@@ -7,41 +7,80 @@ namespace Functions.Worker.AddOns.MiniApiRouting.Generators;
 [Generator]
 public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
 {
+    private const int DefaultRoutePriority = 100;
+
+    private const string DeleteVerb = "DELETE";
+    private const string GetVerb = "GET";
+    private const string HeadVerb = "HEAD";
+    private const string OptionsVerb = "OPTIONS";
+    private const string PatchVerb = "PATCH";
+    private const string PostVerb = "POST";
+    private const string PutVerb = "PUT";
+
     private static readonly HashSet<string> ValidVerbs = new(StringComparer.OrdinalIgnoreCase)
     {
-        "DELETE",
-        "GET",
-        "HEAD",
-        "OPTIONS",
-        "PATCH",
-        "POST",
-        "PUT"
+        DeleteVerb,
+        GetVerb,
+        HeadVerb,
+        OptionsVerb,
+        PatchVerb,
+        PostVerb,
+        PutVerb
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var routes = context.SyntaxProvider.ForAttributeWithMetadataName(WellKnownMetadataNames.MiniApiRouteHandlerAttribute, IsMethod, CreateRouteModel).Collect();
-        var functions = context.SyntaxProvider.ForAttributeWithMetadataName(WellKnownMetadataNames.MiniApiFunctionAttribute, IsMethod, CreateFunctionModel).Collect();
-        context.RegisterSourceOutput(routes.Combine(functions), Generate);
+        var routes = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                IsRouteHandlerCandidate,
+                CreateRouteModel
+            )
+            .Where(route => route is not null)
+            .Select((route, _) => route!)
+            .Collect();
+
+        var functions = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                WellKnownMetadataNames.MiniApiFunctionAttribute,
+                IsMethod,
+                CreateFunctionModel
+            )
+            .Collect();
+
+        context.RegisterSourceOutput(
+            routes.Combine(functions),
+            Generate
+        );
     }
 
-    private static bool IsMethod(SyntaxNode node, CancellationToken _) => node is MethodDeclarationSyntax;
+    private static bool IsRouteHandlerCandidate(SyntaxNode node, CancellationToken _)
+        => node is MethodDeclarationSyntax { AttributeLists.Count: > 0 };
 
-    private static RouteModel CreateRouteModel(GeneratorAttributeSyntaxContext context, CancellationToken _)
+    private static RouteModel? CreateRouteModel(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
-        var method = (IMethodSymbol)context.TargetSymbol;
-        var routeAttribute = context.Attributes[0];
+        var method = context.SemanticModel.GetDeclaredSymbol(context.Node, cancellationToken) as IMethodSymbol;
+        if (method is null)
+            return null;
+
+        var routeAttribute = method.GetAttributes().FirstOrDefault(attribute =>
+            attribute.AttributeClass.InheritsFrom(WellKnownMetadataNames.MiniApiRouteHandlerAttribute)
+        );
+
+        if (routeAttribute is null)
+            return null;
+
         var miniApiAttribute = method.ContainingType.GetAttribute(WellKnownMetadataNames.MiniApiAttribute);
-        var route = RouteTemplate.Normalize(routeAttribute.GetConstructorString(1) ?? string.Empty);
+        var verb = GetRouteVerb(routeAttribute);
+        var route = RouteTemplate.Normalize(GetRouteTemplate(routeAttribute));
         var parameters = MethodAnalyzer.AnalyzeParameters(method, route);
         var parameterLookup = parameters.ToDictionary(parameter => parameter.Name, StringComparer.OrdinalIgnoreCase);
         var segments = RouteTemplate.Parse(route, parameterLookup, out var templateDiagnostics);
 
         return new(
             miniApiAttribute?.GetConstructorString() ?? (miniApiAttribute is null ? "#missing" : string.Empty),
-            (routeAttribute.GetConstructorString() ?? string.Empty).ToUpperInvariant(),
+            verb,
             route,
-            routeAttribute.GetNamedInt("Priority", 100),
+            routeAttribute.GetNamedInt("Priority", DefaultRoutePriority),
             method.ContainingType.GetFullyQualifiedName(),
             method.Name,
             method.IsStatic,
@@ -53,6 +92,35 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
             method.Locations.FirstOrDefault()
         );
     }
+
+    private static string GetRouteVerb(AttributeData routeAttribute)
+    {
+        var attributeName = routeAttribute.AttributeClass?.ToDisplayString();
+
+        return attributeName switch
+        {
+            WellKnownMetadataNames.MiniApiDeleteAttribute => DeleteVerb,
+            WellKnownMetadataNames.MiniApiGetAttribute => GetVerb,
+            WellKnownMetadataNames.MiniApiHeadAttribute => HeadVerb,
+            WellKnownMetadataNames.MiniApiOptionsAttribute => OptionsVerb,
+            WellKnownMetadataNames.MiniApiPatchAttribute => PatchVerb,
+            WellKnownMetadataNames.MiniApiPostAttribute => PostVerb,
+            WellKnownMetadataNames.MiniApiPutAttribute => PutVerb,
+            _ => (routeAttribute.GetConstructorString() ?? string.Empty).ToUpperInvariant()
+        };
+    }
+
+    private static string GetRouteTemplate(AttributeData routeAttribute)
+    {
+        var attributeName = routeAttribute.AttributeClass?.ToDisplayString();
+
+        return attributeName == WellKnownMetadataNames.MiniApiRouteHandlerAttribute
+            ? routeAttribute.GetConstructorString(1) ?? string.Empty
+            : routeAttribute.GetConstructorString() ?? string.Empty;
+    }
+
+    private static bool IsMethod(SyntaxNode node, CancellationToken _)
+        => node is MethodDeclarationSyntax;
 
     private static FunctionModel CreateFunctionModel(GeneratorAttributeSyntaxContext context, CancellationToken _)
     {
@@ -71,6 +139,7 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
     {
         var routes = models.Left;
         var functions = models.Right;
+
         ReportDiagnostics(context, routes, functions);
 
         var validRoutes = routes.Where(IsValidForEmission).ToArray();
@@ -83,7 +152,7 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
         var materializedRoutes = routes.ToArray();
         var materializedFunctions = functions.ToArray();
 
-        foreach (var route in routes.Where(route => route.Group == "#missing"))
+        foreach (var route in materializedRoutes.Where(route => route.Group == "#missing"))
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.MissingMiniApi, route.Location, route.MethodName));
 
         foreach (var route in materializedRoutes.Where(route => route.IsInvalidMethod))
@@ -92,7 +161,7 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
         foreach (var route in materializedRoutes.Where(route => !ValidVerbs.Contains(route.Verb)))
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.InvalidHttpVerb, route.Location, route.MethodName, route.Verb));
 
-        foreach (var route in routes.Where(route => route.Parameters.Count(parameter => parameter.Source == BindingSource.Body) > 1))
+        foreach (var route in materializedRoutes.Where(route => route.Parameters.Count(parameter => parameter.Source == BindingSource.Body) > 1))
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.MultipleBodies, route.Location, route.MethodName));
 
         foreach (var route in materializedRoutes)
@@ -102,7 +171,11 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
             foreach (var route in group)
                 context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.DuplicateRoute, route.Model.Location, route.Model.Verb, route.Model.Template, route.Model.Group));
 
-        var validGroups = new HashSet<string>(materializedRoutes.Where(IsValidForDuplicateAnalysis).Select(route => route.Group), StringComparer.OrdinalIgnoreCase);
+        var validGroups = new HashSet<string>(
+            materializedRoutes.Where(IsValidForDuplicateAnalysis).Select(route => route.Group),
+            StringComparer.OrdinalIgnoreCase
+        );
+
         foreach (var function in materializedFunctions.Where(function => function.IsDuplicateAssociation))
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.DuplicateMiniApiFunctionAssociation, function.Location, function.FunctionName));
 
@@ -122,12 +195,17 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.InvalidRouteTemplate, route.Location, route.Template, diagnostic.Detail ?? diagnostic.Value));
         }
 
-        var routeParameterNames = new HashSet<string>(route.Segments.Where(segment => segment.IsParameter).Select(segment => segment.Name), StringComparer.OrdinalIgnoreCase);
+        var routeParameterNames = new HashSet<string>(
+            route.Segments.Where(segment => segment.IsParameter).Select(segment => segment.Name),
+            StringComparer.OrdinalIgnoreCase
+        );
         var hasRouteValues = route.Parameters.Any(parameter => parameter.FrameworkKind == FrameworkParameterKind.RouteValues);
+
         foreach (var token in routeParameterNames.Where(token => !hasRouteValues && !route.Parameters.Any(parameter => parameter.Source == BindingSource.Route && parameter.Name.Equals(token, StringComparison.OrdinalIgnoreCase))))
             context.ReportDiagnostic(Diagnostic.Create(MiniApiDiagnostics.RouteTokenWithoutBinding, route.Location, token));
 
         var optionalRouteSeen = false;
+
         foreach (var segment in route.Segments)
         {
             if (segment.IsOptional)
@@ -168,6 +246,7 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
     private static bool HasInvalidOptionalOrder(RouteModel route)
     {
         var optionalRouteSeen = false;
+
         foreach (var segment in route.Segments)
         {
             if (segment.IsOptional)
@@ -184,9 +263,10 @@ public sealed class MiniApiRoutingGenerator : IIncrementalGenerator
         if (route.Parameters.Any(parameter => parameter.FrameworkKind == FrameworkParameterKind.RouteValues))
             return false;
 
-        return route.Segments.Any(segment 
-            => segment.IsParameter
-                && !route.Parameters.Any(parameter => parameter.Source == BindingSource.Route && parameter.Name.Equals(segment.Name, StringComparison.OrdinalIgnoreCase)));
+        return route.Segments.Any(segment =>
+            segment.IsParameter
+            && !route.Parameters.Any(parameter => parameter.Source == BindingSource.Route && parameter.Name.Equals(segment.Name, StringComparison.OrdinalIgnoreCase))
+        );
     }
 
     private static IEnumerable<RouteKey> GetRouteKeys(RouteModel route)
