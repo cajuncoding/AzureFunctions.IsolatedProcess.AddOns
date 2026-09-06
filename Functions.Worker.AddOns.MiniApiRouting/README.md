@@ -88,11 +88,11 @@ internal static class MiniApis
 [MiniApi]
 internal sealed class WidgetRouteHandlers(IWidgetService widgetService)
 {
-    [MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId:int}")]
+    [MiniApiGet("/{{widgetId:int}}")]
     public Task<WidgetDto?> GetWidgetAsync(int widgetId, string? include = null, CancellationToken cancellationToken = default)
         => widgetService.GetWidgetAsync(widgetId, include, cancellationToken);
 
-    [MiniApiRouteHandler(MiniApiVerbs.Post)]
+    [MiniApiPost]
     public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest request, CancellationToken cancellationToken)
         => widgetService.CreateWidgetAsync(request, cancellationToken);
 }
@@ -154,7 +154,7 @@ Register a custom `IMiniApiRequestBodyDeserializer` before `AddFunctionsMiniApiR
 ## Catch-all route example
 
 ```csharp
-[MiniApiRouteHandler(MiniApiVerbs.Get, "/assets/{*path}")]
+[MiniApiGet("/assets/{*path}")]
 public Task<DigitalAsset?> GetAssetAsync(string path, CancellationToken cancellationToken)
     => assets.GetAsync(path, cancellationToken);
 ```
