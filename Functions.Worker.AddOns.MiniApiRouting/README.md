@@ -1,6 +1,8 @@
 # Functions.Worker.AddOns.MiniApiRouting
 
-Compile-time generated Mini APIs for Azure Functions isolated worker.
+Compile-time generated Mini APIs for Azure Functions isolated worker. 
+
+When you want many API routes for one Function, and single/consolidated Function Key management, you want an Azure Funtion MiniApi!
 
 ## Overview
 
@@ -65,7 +67,7 @@ builder.Services.AddFunctionsMiniApiRouting();
 
 `AddFunctionsMiniApiRouting()` registers the default `IMiniApiRequestBodyDeserializer` and applies source-generated registrations for RouteHandler classes and `IMiniApiRouter`.
 
-Generated registrations use `TryAddTransient` and `TryAddSingleton`, allowing applications to provide explicit registrations when needed.
+Generated registrations use `TryAddTransient` and `TryAddSingleton`, allowing applications to provide explicit registration to override with custom behavior when needed.
 
 ### 2. Define RouteHandlers
 
@@ -82,12 +84,12 @@ internal sealed class WidgetRouteHandlers(IWidgetService widgets)
         => widgets.GetWidgetAsync(widgetId, material, cancellationToken);
 
     [MiniApiPost]
-    public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest request, CancellationToken cancellationToken = default)
-        => widgets.CreateWidgetAsync(request, cancellationToken);
+    public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest createPayload, CancellationToken cancellationToken = default)
+        => widgets.CreateWidgetAsync(createPayload, cancellationToken);
 
     [MiniApiPut("/{widgetId:int}")]
-    public Task<WidgetDto> UpdateWidgetAsync(int widgetId, UpdateWidgetRequest request, CancellationToken cancellationToken = default)
-        => widgets.UpdateWidgetAsync(widgetId, request, cancellationToken);
+    public Task<WidgetDto> UpdateWidgetAsync(int widgetId, UpdateWidgetRequest updatePayload, CancellationToken cancellationToken = default)
+        => widgets.UpdateWidgetAsync(widgetId, updatePayload, cancellationToken);
 
     [MiniApiDelete("/{widgetId:int}")]
     public Task DeleteWidgetAsync(int widgetId, CancellationToken cancellationToken = default)
@@ -116,20 +118,19 @@ The lower-level form remains available when needed:
 ### 3. Create the hosting Function
 
 ```csharp
-internal sealed class WidgetFunction(IMiniApiRouter router)
+internal sealed class WidgetApiFunction(IMiniApiRouter router)
 {
-    [Function(nameof(WidgetFunction))]
+    [Function(nameof(WidgetApiFunction))]
     [MiniApiFunction]
     public ValueTask<object?> RunAsync(
         [HttpTrigger(
             AuthorizationLevel.Function,
+            //Only define the verbs needed for the API…
             MiniApiVerbs.Get,
             MiniApiVerbs.Post,
             MiniApiVerbs.Put,
             MiniApiVerbs.Patch,
-            MiniApiVerbs.Delete,
-            MiniApiVerbs.Head,
-            MiniApiVerbs.Options,
+            MiniApiVerbs.Delete
             Route = "widgets/{*path}"
         )]
         HttpRequestData request,
@@ -169,7 +170,7 @@ Matches:
 GET /api/widgets/42
 ```
 
-The route token name must match its RouteHandler parameter. Route values are URL-decoded before binding, including encoded spaces and Unicode characters.
+The route token name must match its RouteHandler parameter. Route values are properly URL-decoded before binding, including encoded spaces and Unicode characters.
 
 ### Multiple route parameters
 
@@ -187,6 +188,8 @@ GET /api/widgets/tools/42
 ### Optional trailing route parameters
 
 Route parameters become optional when the matching C# parameter is nullable or has a default value.
+
+As optional then when not bound from the request the default value will be bound id defined, or the binding will be null if no default is defined.
 
 ```csharp
 [MiniApiGet("/{category}/{name}")]
@@ -226,7 +229,7 @@ The bound `path` values are:
 "images/icons/logo.png"
 ```
 
-Catch-all parameters must be terminal. Encoded route values are decoded after segment matching, so an encoded slash remains within the captured segment during matching and is decoded before binding.
+Catch-all parameters must be terminal; the last match segment of the route. Encoded route values are decoded after segment matching, so an encoded slash remains within the captured segment during matching and is decoded before binding.
 
 ## Route constraints
 
@@ -239,18 +242,18 @@ Constraints validate route shape before a RouteHandler is selected.
 | `long` | `{id:long}` | 64-bit integer |
 | `guid` | `{id:guid}` | GUID value |
 | `bool` | `{enabled:bool}` | `true` or `false` |
-| `decimal` | `{price:decimal}` | Invariant-culture decimal number |
+| `decimal` | `{price:decimal}` | Invariant-culture decimal (rational) number |
 
 Examples:
 
 ```csharp
 [MiniApiGet("/{widgetId:int}")]
-public Task<WidgetDto?> GetWidgetAsync(int widgetId)
+public Task<WidgetDto?> GetWidgetByIdAsync(int widgetId)
 ```
 
 ```csharp
-[MiniApiGet("/{assetId:guid}")]
-public Task<DigitalAsset?> GetAssetAsync(Guid assetId)
+[MiniApiGet("/{assetIdentifier:guid}")]
+public Task<DigitalAsset?> GetAssetByIdentifierAsync(Guid assetIdentifier)
 ```
 
 ```csharp
@@ -262,8 +265,7 @@ public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync(bool enabled)
 [MiniApiGet("/{price:decimal}")]
 public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync(decimal price)
 ```
-
-`decimal` provides the general numeric route shape and may also be used when the matching parameter binds to another supported numeric type.
+For rational number input constraint `decimal` provides the general numeric route shape constraint but may be used when the matching parameter binds to any supported rational numeric type such as `decimal`, `double`, `float`, etc.
 
 ## Parameter binding
 
@@ -333,7 +335,7 @@ public Task<WidgetDto?> GetWidgetAsync(
 
 ### Request body
 
-One complex parameter binds from the JSON request body automatically.
+One single complex parameter binds from the JSON request body automatically.
 
 ```csharp
 [MiniApiPost]
@@ -359,7 +361,9 @@ internal sealed class WidgetRouteHandlers
 [MiniApiFunction]
 ```
 
-When one Function app hosts several independent APIs, use named groups. Constants keep the association clean and explicit.
+When one Function app hosts several independent APIs, use named groups to separate the sets of APIs and dispatch them from separate root Functions.
+
+Using Constants can help keep the association clean and explicit.
 
 ```csharp
 internal static class MiniApis
@@ -376,7 +380,7 @@ internal sealed class WidgetRouteHandlers
 [MiniApiFunction(MiniApis.Widgets)]
 ```
 
-Several classes may contribute RouteHandlers to the same default or named group. Group names are never inferred from class names.
+Multiple classes may contribute RouteHandlers to the same default or named group. Group names are never inferred from class names. This allows implementations to decide how they want to structure and organize thier code.
 
 ## Route priority and specificity
 
@@ -428,30 +432,9 @@ Request-specific routing and binding failures use:
 
 The library does not create HTTP error responses. Applications may use isolated-worker middleware to map exceptions to JSON, XML, Problem Details, `HttpResponseData`, or another response format.
 
-## Non-goals
+## Non-goals (What MiniApi is not trying to do!)
 
-MiniApiRouting is not MVC, controllers, MediatR, pipeline behaviors, output serialization, automatic HTTP error responses, form-data binding, cookie binding, or arbitrary body-format binding.
-
-## Package architecture
-
-The NuGet package contains:
-
-```text
-lib/net8.0/Functions.Worker.AddOns.MiniApiRouting.dll
-lib/net10.0/Functions.Worker.AddOns.MiniApiRouting.dll
-analyzers/dotnet/cs/Functions.Worker.AddOns.MiniApiRouting.Generators.dll
-```
-
-Generated routing remains focused on Function-to-group dispatch and direct RouteHandler invocation. Shared runtime helpers handle route matching, URL decoding, constraints, and value conversion so those behaviors remain centralized and independently testable.
-
-## Contributing and validation
-
-```powershell
-dotnet restore
-dotnet build -c Release
-dotnet test -c Release --no-build
-dotnet pack -c Release --no-build
-```
+MiniApiRouting is not trying to replace or be AspNetCore MVC, controllers, MediatR, pipeline behaviors, output serialization, automatic HTTP error responses, form-data binding, cookie binding, or arbitrary body-format binding.
 
 ## Current release status
 
