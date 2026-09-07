@@ -4,61 +4,43 @@ Compile-time generated Mini APIs for Azure Functions isolated worker.
 
 ## Overview
 
-MiniApiRouting lets one Azure Function host a logical group of HTTP routes while keeping the isolated-worker programming model. Route handlers are ordinary methods discovered by a source generator and dispatched by generated code.
+MiniApiRouting lets one Azure Function host a logical group of HTTP routes while preserving the isolated-worker programming model. RouteHandlers are ordinary methods discovered by a source generator and dispatched through focused generated code.
 
-### Give Star 🌟
-**If you like this project and/or use it the please give it a Star 🌟 (c'mon it's free, and it'll help others find the project)!**
+```text
+One Function
+One Function Key
+One Authorization Boundary
+Many Routes
+```
 
-### [Buy me a Coffee ☕](https://www.buymeacoffee.com/cajuncoding)
-*I'm happy to share with the community, but if you find this useful (e.g for professional use), and are so inclinded,
-then I do love-me-some-coffee!*
+MiniApiRouting provides compile-time route validation and routing without assembly scanning, reflection, or runtime route discovery.
 
-<a href="https://www.buymeacoffee.com/cajuncoding" target="_blank">
-<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174">
-</a> 
+### Give the project a Star 🌟
 
-## Why this package exists
+**If you like this project or use it, please give it a Star. It is free and helps others find the project!**
 
-A logical API often needs several routes but one authorization boundary. Creating one Function per route forces consumers to manage several equivalent function keys or move to broader host-level keys. MiniApiRouting allows related routes to share one Function, one authorization level, and one function key.
+### Buy me a Coffee ☕
+
+I am happy to share with the community, but if you find this useful, especially for professional use, then I do love me some coffee!
+
+<a href="https://www.buymeacoffee.com/cajuncoding" target="_blank" rel="noopener noreferrer"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
 ## Why not one Function per route?
 
-Azure Functions encourages one Function per endpoint.
-
-That works well for many APIs but can become cumbersome when a logical API surface contains numerous related routes that should share the same authorization boundary and Function Key.
+Azure Functions encourages one Function per endpoint. That works well for many APIs, but it can become cumbersome when a logical API contains several related routes that should share the same authorization boundary and Function Key.
 
 MiniApiRouting enables:
 
 - One Function
 - One Function Key
-- Many Routes
+- Many routes
 - Compile-time validation
 - Compile-time dispatch generation for routing runtime performance
-- Ultra lightweight footprint with 'plain vanilla' Azure Functions isolated worker hosting
-- No Assembly scanning, reflection, or runtime discovery
+- Ultra lightweight footprint with plain vanilla Azure Functions isolated-worker hosting
+- No assembly scanning, reflection, or runtime discovery
 - No runtime route-discovery cold-start penalty
 
-... all while preserving the Azure Functions isolated-worker model.
-
-## Goals
-
-- Preserve Azure Functions isolated-worker hosting, middleware, DI, authorization, and keys.
-- Support default and named/grouped Mini APIs in the same app (multiple MiniApi Functions can co-exist).
-- Generate routing, binding, dispatch, and DI registration at compile time.
-- Avoid manual switches, dictionaries, runtime discovery, reflection, or assembly scanning.
-
-## Non-goals
-
-MiniApiRouting is not MVC, controllers, MediatR, pipeline behaviors, output serialization, automatic HTTP error responses, form-data binding, cookie binding, or arbitrary body-format binding.
-
-## Compile-time advantages
-
-The generator validates route handlers, ambiguous routes, optional path rules, binding conflicts, body parameters, route templates, and Function-to-Mini-API associations before runtime.
-
-## Supported frameworks
-
-- Runtime: `net8.0`, `net10.0`
-- Source generator: `netstandard2.0`
+All while preserving Azure Functions isolated-worker hosting, middleware, dependency injection, authorization, and keys.
 
 ## Installation
 
@@ -66,51 +48,72 @@ The generator validates route handlers, ambiguous routes, optional path rules, b
 dotnet add package Functions.Worker.AddOns.MiniApiRouting
 ```
 
-The package includes the runtime library and generator analyzer. Consumers install only this package.
+The package includes the runtime library and source-generator analyzer. Consumers install only this package.
 
-## Registration
+Supported frameworks:
+
+- Runtime: `net8.0`, `net10.0`
+- Source generator: `netstandard2.0`
+
+## Quick start
+
+### 1. Register MiniApiRouting
 
 ```csharp
 builder.Services.AddFunctionsMiniApiRouting();
 ```
 
-`AddFunctionsMiniApiRouting()` registers the default `IMiniApiRequestBodyDeserializer` and applies the source-generated registrations for RouteHandler classes and `IMiniApiRouter`.
+`AddFunctionsMiniApiRouting()` registers the default `IMiniApiRequestBodyDeserializer` and applies source-generated registrations for RouteHandler classes and `IMiniApiRouter`.
+
 Generated registrations use `TryAddTransient` and `TryAddSingleton`, allowing applications to provide explicit registrations when needed.
 
-## Async-first Widget API example
+### 2. Define RouteHandlers
 
 ```csharp
-internal static class MiniApis
-{
-    internal const string Widgets = "widgets";
-}
-
 [MiniApi]
-internal sealed class WidgetRouteHandlers(IWidgetService widgetService)
+internal sealed class WidgetRouteHandlers(IWidgetService widgets)
 {
-    [MiniApiGet("/{{widgetId:int}}")]
-    public Task<WidgetDto?> GetWidgetAsync(int widgetId, string? include = null, CancellationToken cancellationToken = default)
-        => widgetService.GetWidgetAsync(widgetId, include, cancellationToken);
+    [MiniApiGet]
+    public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync(CancellationToken cancellationToken = default)
+        => widgets.GetWidgetsAsync(cancellationToken);
+
+    [MiniApiGet("/{widgetId:int}")]
+    public Task<WidgetDto?> GetWidgetAsync(int widgetId, string? material = null, CancellationToken cancellationToken = default)
+        => widgets.GetWidgetAsync(widgetId, material, cancellationToken);
 
     [MiniApiPost]
-    public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest request, CancellationToken cancellationToken)
-        => widgetService.CreateWidgetAsync(request, cancellationToken);
+    public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest request, CancellationToken cancellationToken = default)
+        => widgets.CreateWidgetAsync(request, cancellationToken);
+
+    [MiniApiPut("/{widgetId:int}")]
+    public Task<WidgetDto> UpdateWidgetAsync(int widgetId, UpdateWidgetRequest request, CancellationToken cancellationToken = default)
+        => widgets.UpdateWidgetAsync(widgetId, request, cancellationToken);
+
+    [MiniApiDelete("/{widgetId:int}")]
+    public Task DeleteWidgetAsync(int widgetId, CancellationToken cancellationToken = default)
+        => widgets.DeleteWidgetAsync(widgetId, cancellationToken);
 }
 ```
 
-## Default Mini API example
+The convenience attributes cover the supported HTTP verbs:
 
-Use `[MiniApi]` and `[MiniApiFunction]` without a name for the default group.
+```csharp
+[MiniApiGet]
+[MiniApiPost]
+[MiniApiPut]
+[MiniApiPatch]
+[MiniApiDelete]
+[MiniApiHead]
+[MiniApiOptions]
+```
 
-## Named Mini API example
+The lower-level form remains available when needed:
 
-Use API grouping names (constants make this clean) with `[MiniApi(MiniApis.Widgets)]` and `[MiniApiFunction(MiniApis.Widgets)]`. Group names are never inferred from class names.
+```csharp
+[MiniApiRouteHandler(MiniApiVerbs.Get, "/{widgetId:int}")]
+```
 
-## Multiple Mini APIs and Functions example
-
-Several classes can contribute handlers to the same group, and several Functions can host different groups in one app.
-
-## Function delegation
+### 3. Create the hosting Function
 
 ```csharp
 internal sealed class WidgetFunction(IMiniApiRouter router)
@@ -118,87 +121,330 @@ internal sealed class WidgetFunction(IMiniApiRouter router)
     [Function(nameof(WidgetFunction))]
     [MiniApiFunction]
     public ValueTask<object?> RunAsync(
-        [HttpTrigger(AuthorizationLevel.Function, MiniApiVerbs.Get, MiniApiVerbs.Post, Route = "widgets/{*path}")] HttpRequestData request,
+        [HttpTrigger(
+            AuthorizationLevel.Function,
+            MiniApiVerbs.Get,
+            MiniApiVerbs.Post,
+            MiniApiVerbs.Put,
+            MiniApiVerbs.Patch,
+            MiniApiVerbs.Delete,
+            MiniApiVerbs.Head,
+            MiniApiVerbs.Options,
+            Route = "widgets/{*path}"
+        )]
+        HttpRequestData request,
         string? path,
         CancellationToken cancellationToken
     ) => router.DispatchAsync(request, path, cancellationToken);
 }
 ```
 
-The generated router resolves the Mini API group from the current Function name and `MiniApiFunctionAttribute`.
+That is the complete routing setup.
 
-## Route parameter binding
+## Route patterns
 
-Scalar parameters matching route tokens bind from route values and take precedence over query strings.
+### Root routes
 
-## Query-string and repeated collection binding
+```csharp
+[MiniApiGet]
+public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync()
+```
 
-Scalar query parameters bind from `HttpRequestData.Query`. Repeated values support arrays, `List<T>`, `IList<T>`, `IReadOnlyList<T>`, `IEnumerable<T>`, `ICollection<T>`, and `IReadOnlyCollection<T>` for supported scalar element types. Scalar parameters use the first value deterministically.
+Matches:
 
-## Explicit header binding
+```text
+GET /api/widgets
+```
 
-Headers require `[MiniApiFromHeader("x-correlation-id")]` and are not bound by convention.
+### Route parameters
 
-## Inferred and explicit body binding
+```csharp
+[MiniApiGet("/{widgetId:int}")]
+public Task<WidgetDto?> GetWidgetAsync(int widgetId)
+```
 
-One complex parameter binds from the JSON body automatically. Use `[MiniApiFromBody]` to opt in explicitly.
+Matches:
 
-## Custom IMiniApiRequestBodyDeserializer example
+```text
+GET /api/widgets/42
+```
 
-Register a custom `IMiniApiRequestBodyDeserializer` before `AddFunctionsMiniApiRouting` to support XML or another format. The default package ships JSON support only and uses the Azure Functions worker-configured `ObjectSerializer`.
+The route token name must match its RouteHandler parameter. Route values are URL-decoded before binding, including encoded spaces and Unicode characters.
 
-## Route priority and natural specificity
+### Multiple route parameters
 
-`MiniApiRouteHandlerAttribute.Priority` defaults to `100`. Lower values run first. Ties prefer static segments, constrained parameters, unconstrained parameters, then catch-all parameters.
+```csharp
+[MiniApiGet("/{category}/{widgetId:int}")]
+public Task<WidgetDto?> GetWidgetAsync(string category, int widgetId)
+```
 
-## Catch-all route example
+Matches:
+
+```text
+GET /api/widgets/tools/42
+```
+
+### Optional trailing route parameters
+
+Route parameters become optional when the matching C# parameter is nullable or has a default value.
+
+```csharp
+[MiniApiGet("/{category}/{name}")]
+public Task<IReadOnlyList<WidgetDto>> SearchWidgetsAsync(string? category = null, string? name = null)
+```
+
+Matches:
+
+```text
+GET /api/widgets
+GET /api/widgets/tools
+GET /api/widgets/tools/hammer
+```
+
+Optional route parameters must be contiguous and trailing. A required route segment cannot follow an optional route parameter.
+
+### Catch-all routes
 
 ```csharp
 [MiniApiGet("/assets/{*path}")]
-public Task<DigitalAsset?> GetAssetAsync(string path, CancellationToken cancellationToken)
-    => assets.GetAsync(path, cancellationToken);
+public Task<DigitalAsset?> GetAssetAsync(string path, CancellationToken cancellationToken = default)
 ```
 
-Catch-all parameters must be terminal.
+Matches:
 
-## Optional trailing path parameters
+```text
+GET /api/widgets/assets
+GET /api/widgets/assets/logo.png
+GET /api/widgets/assets/images/icons/logo.png
+```
 
-Nullable or defaulted trailing route parameters are optional. Optional route parameters must be contiguous and trailing.
+The bound `path` values are:
 
-## Supported return shapes
+```text
+""
+"logo.png"
+"images/icons/logo.png"
+```
 
-Handlers may return `T`, `Task<T>`, `ValueTask<T>`, `void`, `Task`, or `ValueTask`. Results are not serialized or converted by MiniApiRouting.
+Catch-all parameters must be terminal. Encoded route values are decoded after segment matching, so an encoded slash remains within the captured segment during matching and is decoded before binding.
 
-## Exception handling
+## Route constraints
 
-Routing and binding failures throw `MiniApiRouteNotFoundException`, `MiniApiParameterBindingException`, or `MiniApiUnsupportedContentTypeException`. The library does not create HTTP error responses.
+Constraints validate route shape before a RouteHandler is selected.
 
-## Compile-time diagnostic table
+| Constraint | Example | Matches |
+| --- | --- | --- |
+| `string` | `{name:string}` | Any string value |
+| `int` | `{id:int}` | 32-bit integer |
+| `long` | `{id:long}` | 64-bit integer |
+| `guid` | `{id:guid}` | GUID value |
+| `bool` | `{enabled:bool}` | `true` or `false` |
+| `decimal` | `{price:decimal}` | Invariant-culture decimal number |
 
-| ID | Description |
-| --- | --- |
-| MAR001 | Missing `[MiniApi]` on a RouteHandler class |
-| MAR002 | Duplicate or ambiguous route |
-| MAR003 | Invalid RouteHandler method |
-| MAR004 | Multiple body-bound parameters |
-| MAR005 | Invalid optional route parameter order |
-| MAR006 | Function references a group with no handlers |
-| MAR007 | Unbound parameter |
-| MAR008 | Unsupported route constraint |
-| MAR009 | Nonterminal catch-all |
-| MAR010 | Conflicting binding attributes |
-| MAR011 | Route token without binding destination |
-| MAR012 | Body binding on framework parameter |
-| MAR013 | Unsupported query/header collection element |
-| MAR014 | Duplicate MiniApiFunction association if the attribute model permits it |
-| MAR015 | Invalid HTTP verb |
-| MAR016 | Invalid route template syntax |
+Examples:
+
+```csharp
+[MiniApiGet("/{widgetId:int}")]
+public Task<WidgetDto?> GetWidgetAsync(int widgetId)
+```
+
+```csharp
+[MiniApiGet("/{assetId:guid}")]
+public Task<DigitalAsset?> GetAssetAsync(Guid assetId)
+```
+
+```csharp
+[MiniApiGet("/{enabled:bool}")]
+public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync(bool enabled)
+```
+
+```csharp
+[MiniApiGet("/{price:decimal}")]
+public Task<IReadOnlyList<WidgetDto>> GetWidgetsAsync(decimal price)
+```
+
+`decimal` provides the general numeric route shape and may also be used when the matching parameter binds to another supported numeric type.
+
+## Parameter binding
+
+MiniApiRouting binds RouteHandler parameters in this order:
+
+1. Supported framework parameters
+2. Explicit binding attributes
+3. Route values
+4. Query-string values
+5. One inferred request body
+6. Declared C# default values or nullable fallbacks
+
+Route values take precedence over query-string values with the same name.
+
+### Framework parameters
+
+RouteHandlers may receive:
+
+```csharp
+HttpRequestData
+FunctionContext
+CancellationToken
+MiniApiRouteValues
+```
+
+### Query-string values
+
+Scalar parameters not matched to route tokens bind from `HttpRequestData.Query`.
+
+```csharp
+[MiniApiGet("/{widgetId:int}")]
+public Task<WidgetDto?> GetWidgetAsync(int widgetId, string? material = null)
+```
+
+Request:
+
+```text
+GET /api/widgets/42?material=titanium
+```
+
+Repeated query values support arrays, `List<T>`, `IList<T>`, `IReadOnlyList<T>`, `IEnumerable<T>`, `ICollection<T>`, and `IReadOnlyCollection<T>` for supported scalar element types.
+
+```csharp
+[MiniApiGet]
+public Task<IReadOnlyList<WidgetDto>> SearchWidgetsAsync(string[] tags)
+```
+
+Request:
+
+```text
+GET /api/widgets?tags=tools&tags=featured
+```
+
+Scalar parameters use the first value deterministically. Missing collections bind as empty collections.
+
+### Header values
+
+Headers require explicit binding and are not bound by convention.
+
+```csharp
+[MiniApiGet("/{widgetId:int}")]
+public Task<WidgetDto?> GetWidgetAsync(
+    int widgetId,
+    [MiniApiFromHeader("x-correlation-id")] string? correlationId = null
+)
+```
+
+### Request body
+
+One complex parameter binds from the JSON request body automatically.
+
+```csharp
+[MiniApiPost]
+public Task<WidgetDto> CreateWidgetAsync(CreateWidgetRequest request)
+```
+
+Use `[MiniApiFromBody]` when explicit body binding is preferred.
+
+The default `MiniApiJsonRequestBodyDeserializer` uses the Azure Functions worker-configured `ObjectSerializer` and accepts `application/json` and structured `application/*+json` content types.
+
+Applications can support XML or another format by registering a custom `IMiniApiRequestBodyDeserializer` before calling `AddFunctionsMiniApiRouting()`.
+
+## Default and named Mini APIs
+
+Most applications can use the default group:
+
+```csharp
+[MiniApi]
+internal sealed class WidgetRouteHandlers
+{
+}
+
+[MiniApiFunction]
+```
+
+When one Function app hosts several independent APIs, use named groups. Constants keep the association clean and explicit.
+
+```csharp
+internal static class MiniApis
+{
+    internal const string Widgets = "widgets";
+    internal const string Assets = "assets";
+}
+
+[MiniApi(MiniApis.Widgets)]
+internal sealed class WidgetRouteHandlers
+{
+}
+
+[MiniApiFunction(MiniApis.Widgets)]
+```
+
+Several classes may contribute RouteHandlers to the same default or named group. Group names are never inferred from class names.
+
+## Route priority and specificity
+
+`MiniApiRouteHandlerAttribute.Priority` defaults to `100`. Lower numbers are evaluated first.
+
+When priorities are equal, routes are ordered naturally:
+
+1. Static segments
+2. Constrained parameters
+3. Unconstrained parameters
+4. Catch-all parameters
+
+Use an explicit priority only when natural route specificity does not express the desired behavior.
+
+```csharp
+[MiniApiGet("/health", Priority = 0)]
+public static object GetHealth()
+    => new { Status = "Healthy" };
+```
+
+## Return values
+
+RouteHandlers may return:
+
+```text
+T
+Task<T>
+ValueTask<T>
+void
+Task
+ValueTask
+```
+
+MiniApiRouting does not serialize or transform RouteHandler results. RouteHandlers may return DTOs, custom results, `HttpResponseData`, or any application-specific value. Existing Function code or middleware remains responsible for output handling.
+
+## Compile-time validation
+
+MiniApiRouting reports actionable compiler errors for invalid RouteHandler declarations, malformed or ambiguous routes, unsupported constraints, optional-route ordering, catch-all placement, binding conflicts, multiple request bodies, missing route bindings, and invalid Function-to-Mini-API associations.
+
+These issues are found during compilation rather than after deployment or during request processing.
+
+## Runtime errors
+
+Request-specific routing and binding failures use:
+
+- `MiniApiRouteNotFoundException`
+- `MiniApiParameterBindingException`
+- `MiniApiUnsupportedContentTypeException`
+
+The library does not create HTTP error responses. Applications may use isolated-worker middleware to map exceptions to JSON, XML, Problem Details, `HttpResponseData`, or another response format.
+
+## Non-goals
+
+MiniApiRouting is not MVC, controllers, MediatR, pipeline behaviors, output serialization, automatic HTTP error responses, form-data binding, cookie binding, or arbitrary body-format binding.
 
 ## Package architecture
 
-The NuGet package contains runtime assemblies under `lib/net8.0` and `lib/net10.0` plus the generator under `analyzers/dotnet/cs`.
+The NuGet package contains:
 
-## Contributing and validation commands
+```text
+lib/net8.0/Functions.Worker.AddOns.MiniApiRouting.dll
+lib/net10.0/Functions.Worker.AddOns.MiniApiRouting.dll
+analyzers/dotnet/cs/Functions.Worker.AddOns.MiniApiRouting.Generators.dll
+```
+
+Generated routing remains focused on Function-to-group dispatch and direct RouteHandler invocation. Shared runtime helpers handle route matching, URL decoding, constraints, and value conversion so those behaviors remain centralized and independently testable.
+
+## Contributing and validation
 
 ```powershell
 dotnet restore
