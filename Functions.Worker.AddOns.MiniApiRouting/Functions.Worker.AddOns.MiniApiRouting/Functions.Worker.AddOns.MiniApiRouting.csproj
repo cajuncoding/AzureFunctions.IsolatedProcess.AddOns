@@ -2,16 +2,26 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
     <PackageReleaseNotes>
+      v1.1.1:
+      - Refactored route matching into a shared runtime implementation instead of emitting matching logic into generated source.
+      - Reduced generated router size and complexity.
+      - Added support for the explicit `string` route constraint.
+      - Added support for empty catch-all route matching (`/{*path}`).
+      - Centralized route constraint definitions into a shared implementation used by both the generator and runtime components.
+      - Added comprehensive route matcher test coverage!
+      - Added complete constraint validation coverage
+      - Simplified and optimized runtime constraint evaluation.
+      
       v1.1.0:
       - Added convenience route attributes: [MiniApiGet], [MiniApiPost], [MiniApiPut], [MiniApiPatch], [MiniApiDelete], [MiniApiHead], and [MiniApiOptions]
       - Expanded generator validation and regression test coverage
       - Documentation and README improvements
-      
+
       v1.0.1:
       - Improved DI lifetime handling using FunctionContext.InstanceServices
       - Fixed optional route validation edge cases
@@ -34,6 +44,9 @@
     <PackageTags>Azure, Functions, Worker, Isolated, MiniApi, MinimalApi, Routing, SourceGenerator, One, Single, Function, Many, Multiple, API, Routes</PackageTags>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Functions.Worker.AddOns.MiniApiRouting.SharedCodeFiles\MiniApiRouteConstraint.cs" Link="SharedCodeFiles\MiniApiRouteConstraint.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <ProjectReference Include="../Functions.Worker.AddOns.MiniApiRouting.Generators/Functions.Worker.AddOns.MiniApiRouting.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
@@ -41,7 +54,5 @@
   <ItemGroup>
     <None Include="../README.md" Link="README.md" Pack="true" PackagePath="/" />
     <None Include="../Functions.Worker.AddOns.MiniApiRouting.Generators/bin/$(Configuration)/netstandard2.0/Functions.Worker.AddOns.MiniApiRouting.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="..\Design-Decisions.md" Link="Design-Decisions.md" />
-    <None Include="..\Diagnostics.md" Link="Diagnostics.md" />
   </ItemGroup>
 </Project>

@@ -12,4 +12,10 @@
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Functions.Worker.AddOns.MiniApiRouting.SharedCodeFiles\MiniApiRouteConstraint.cs" Link="SharedCodeFiles\MiniApiRouteConstraint.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="SharedCodeFiles\" />
+  </ItemGroup>
 </Project>

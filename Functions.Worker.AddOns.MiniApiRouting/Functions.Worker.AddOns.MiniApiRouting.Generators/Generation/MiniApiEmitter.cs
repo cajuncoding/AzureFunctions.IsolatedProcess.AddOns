@@ -8,12 +8,13 @@ internal static class MiniApiEmitter
     {
         var orderedRoutes = routes.OrderByRoutePrecedence().ToArray();
         var source = new StringBuilder();
+
         AppendHeader(source);
         AppendRouteFields(source, orderedRoutes);
         AppendDispatch(source, orderedRoutes);
         AppendFunctionGroups(source, functions);
-        AppendRouterHelpers(source);
         AppendServiceRegistration(source, orderedRoutes);
+
         return source.ToString();
     }
 
@@ -42,11 +43,14 @@ internal static class MiniApiEmitter
     {
         for (var index = 0; index < routes.Count; index++)
         {
-            source.AppendLine($"    private static readonly MiniApiGeneratedRouteSegment[] Route{index}Segments = new MiniApiGeneratedRouteSegment[]");
+            source.AppendLine($"    private static readonly MiniApiRouteSegment[] Route{index}Segments = new MiniApiRouteSegment[]");
             source.AppendLine("    {");
+
             foreach (var segment in routes[index].Segments)
             {
-                source.AppendLine($"        new MiniApiGeneratedRouteSegment({segment.Template.ToStringLiteral()}, {segment.Name.ToStringLiteral()}, {(segment.Constraint is null ? "null" : segment.Constraint.ToStringLiteral())}, {segment.IsCatchAll.ToString().ToLowerInvariant()}, {segment.IsParameter.ToString().ToLowerInvariant()}),");
+                source.AppendLine(
+                    $"        new MiniApiRouteSegment({segment.Template.ToStringLiteral()}, {segment.Name.ToStringLiteral()}, {(segment.Constraint is null ? "null" : segment.Constraint.ToStringLiteral())}, {segment.IsCatchAll.ToString().ToLowerInvariant()}, {segment.IsParameter.ToString().ToLowerInvariant()}),"
+                );
             }
 
             source.AppendLine("    };");
@@ -84,19 +88,27 @@ internal static class MiniApiEmitter
     {
         var requiredSegments = route.Segments.TakeWhile(segment => !segment.IsOptional).Count();
         var routeValuesName = $"routeValues{routeIndex}";
-        source.AppendLine($"        if (group.Equals({route.Group.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && request.Method.Equals({route.Verb.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && TryMatch(segments, Route{routeIndex}Segments, {requiredSegments}, out var {routeValuesName}))");
+
+        source.AppendLine(
+            $"        if (group.Equals({route.Group.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && request.Method.Equals({route.Verb.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && MiniApiRouteMatcher.TryMatch(segments, Route{routeIndex}Segments, {requiredSegments}, out var {routeValuesName}))"
+        );
         source.AppendLine("        {");
 
         var bodyParameter = route.Parameters.SingleOrDefault(parameter => parameter.Source == BindingSource.Body);
+
         if (bodyParameter is not null)
         {
             var nullableBodySuffix = bodyParameter.IsNullable ? "?" : string.Empty;
             var nullForgivingSuffix = bodyParameter.IsNullable ? string.Empty : "!";
-            source.AppendLine($"            var bodyDeserializer = services.GetRequiredService<IMiniApiRequestBodyDeserializer>();");
-            source.AppendLine($"            var body = ({bodyParameter.TypeName}{nullableBodySuffix})(await bodyDeserializer.DeserializeAsync(request, typeof({bodyParameter.TypeName}), cancellationToken)){nullForgivingSuffix};");
+
+            source.AppendLine("            var bodyDeserializer = services.GetRequiredService<IMiniApiRequestBodyDeserializer>();");
+            source.AppendLine(
+                $"            var body = ({bodyParameter.TypeName}{nullableBodySuffix})(await bodyDeserializer.DeserializeAsync(request, typeof({bodyParameter.TypeName}), cancellationToken)){nullForgivingSuffix};"
+            );
         }
 
         var invocation = route.GetInvocation(routeValuesName);
+
         source.AppendLine($"            {GetReturnStatement(route.ReturnKind, invocation)}");
         source.AppendLine("        }");
     }
@@ -105,8 +117,10 @@ internal static class MiniApiEmitter
     {
         source.AppendLine("    private static string ResolveGroup(string functionName) => functionName switch");
         source.AppendLine("    {");
+
         foreach (var function in functions.GroupBy(function => function.FunctionName, StringComparer.OrdinalIgnoreCase).Select(group => group.First()))
             source.AppendLine($"        {function.FunctionName.ToStringLiteral()} => {function.Group.ToStringLiteral()},");
+
         source.AppendLine("        _ => string.Empty");
         source.AppendLine("    };");
         source.AppendLine();
@@ -115,6 +129,7 @@ internal static class MiniApiEmitter
     private static void AppendServiceRegistration(StringBuilder source, IEnumerable<RouteModel> routes)
     {
         source.AppendLines("""
+        }
         internal static class GeneratedMiniApiServiceRegistration
         {
             [ModuleInitializer]
@@ -136,114 +151,65 @@ internal static class MiniApiEmitter
         """);
     }
 
-    private static void AppendRouterHelpers(StringBuilder source)
-    {
-        source.AppendLines("""
-            private static bool TryMatch(string[] actual, MiniApiGeneratedRouteSegment[] template, int requiredSegments, out System.Collections.Generic.Dictionary<string, string> values)
-            {
-                values = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var hasCatchAll = template.Length > 0 && template[template.Length - 1].IsCatchAll;
-                if (actual.Length < requiredSegments || actual.Length > template.Length && !hasCatchAll)
-                    return false;
-
-                for (var index = 0; index < template.Length; index++)
-                {
-                    var expected = template[index];
-                    if (index >= actual.Length)
-                        return index >= requiredSegments;
-
-                    if (!expected.IsParameter)
-                    {
-                        if (!expected.Template.Equals(actual[index], StringComparison.OrdinalIgnoreCase))
-                            return false;
-
-                        continue;
-                    }
-
-                    var value = expected.IsCatchAll ? string.Join("/", actual.Skip(index)) : actual[index];
-                    if (!MatchesConstraint(value, expected.Constraint))
-                        return false;
-
-                    values[expected.Name] = Uri.UnescapeDataString(value);
-                    if (expected.IsCatchAll)
-                        return true;
-                }
-
-                return true;
-            }
-
-            private static bool MatchesConstraint(string value, string? constraint) => constraint?.ToLowerInvariant() switch
-            {
-                null or "" => true,
-        """);
-
-        foreach (var constraint in RouteConstraints.SupportedRouteConstraints)
-            source.AppendLine($"        {constraint.Name.ToStringLiteral()} => {constraint.GeneratedTryParseExpression},");
-
-        source.AppendLines("""
-                _ => false
-            };
-
-            private readonly struct MiniApiGeneratedRouteSegment
-            {
-                public MiniApiGeneratedRouteSegment(string template, string name, string? constraint, bool isCatchAll, bool isParameter)
-                {
-                    Template = template;
-                    Name = name;
-                    Constraint = constraint;
-                    IsCatchAll = isCatchAll;
-                    IsParameter = isParameter;
-                }
-
-                public string Template { get; }
-                public string Name { get; }
-                public string? Constraint { get; }
-                public bool IsCatchAll { get; }
-                public bool IsParameter { get; }
-            }
-        }
-
-        """);
-    }
-
-    private static string GetReturnStatement(ReturnKind returnKind, string invocation) => returnKind switch
-    {
-        ReturnKind.Void => $"{invocation}; return null;",
-        ReturnKind.Task or ReturnKind.ValueTask => $"await {invocation}; return null;",
-        ReturnKind.TaskValue or ReturnKind.ValueTaskValue => $"return await {invocation};",
-        _ => $"return {invocation};"
-    };
+    private static string GetReturnStatement(ReturnKind returnKind, string invocation)
+        => returnKind switch
+        {
+            ReturnKind.Void => $"{invocation}; return null;",
+            ReturnKind.Task or ReturnKind.ValueTask => $"await {invocation}; return null;",
+            ReturnKind.TaskValue or ReturnKind.ValueTaskValue => $"return await {invocation};",
+            _ => $"return {invocation};"
+        };
 
     private static string GetInvocation(this RouteModel route, string routeValuesName)
     {
         var target = route.IsStatic ? $"{route.ContainingType}." : $"services.GetRequiredService<{route.ContainingType}>().";
+
         return $"{target}{route.MethodName}({string.Join(", ", route.Parameters.Select(parameter => GetArgument(parameter, routeValuesName)))})";
     }
 
-    private static string GetArgument(ParameterModel parameter, string routeValuesName) => parameter.Source switch
-    {
-        BindingSource.Framework => GetFrameworkArgument(parameter, routeValuesName),
-        BindingSource.Body => "body",
-        BindingSource.Header => GetBoundArgument(parameter, $"request.GetHeaderValues({(parameter.HeaderName ?? parameter.Name).ToStringLiteral()})", "header"),
-        BindingSource.Route => GetBoundArgument(parameter, $"{routeValuesName}.TryGetValue({parameter.Name.ToStringLiteral()}, out var {parameter.Name}RouteValue) ? new[] {{ {parameter.Name}RouteValue }} : Array.Empty<string>()", "route"),
-        _ => GetBoundArgument(parameter, $"request.GetQueryValues({parameter.Name.ToStringLiteral()})", "query")
-    };
+    private static string GetArgument(ParameterModel parameter, string routeValuesName)
+        => parameter.Source switch
+        {
+            BindingSource.Framework => GetFrameworkArgument(parameter, routeValuesName),
+            BindingSource.Body => "body",
+            BindingSource.Header => GetBoundArgument(
+                parameter,
+                $"request.GetHeaderValues({(parameter.HeaderName ?? parameter.Name).ToStringLiteral()})",
+                "header"
+            ),
+            BindingSource.Route => GetBoundArgument(
+                parameter,
+                $"{routeValuesName}.TryGetValue({parameter.Name.ToStringLiteral()}, out var {parameter.Name}RouteValue) ? new[] {{ {parameter.Name}RouteValue }} : Array.Empty<string>()",
+                "route"
+            ),
+            _ => GetBoundArgument(
+                parameter,
+                $"request.GetQueryValues({parameter.Name.ToStringLiteral()})",
+                "query"
+            )
+        };
 
-    private static string GetFrameworkArgument(ParameterModel parameter, string routeValuesName) => parameter.FrameworkKind switch
-    {
-        FrameworkParameterKind.Request => "request",
-        FrameworkParameterKind.Context => "request.FunctionContext",
-        FrameworkParameterKind.CancellationToken => "cancellationToken",
-        _ => $"new MiniApiRouteValues({routeValuesName})"
-    };
+    private static string GetFrameworkArgument(ParameterModel parameter, string routeValuesName)
+        => parameter.FrameworkKind switch
+        {
+            FrameworkParameterKind.Request => "request",
+            FrameworkParameterKind.Context => "request.FunctionContext",
+            FrameworkParameterKind.CancellationToken => "cancellationToken",
+            _ => $"new MiniApiRouteValues({routeValuesName})"
+        };
 
     private static string GetBoundArgument(ParameterModel parameter, string values, string source)
     {
         if (parameter.Collection != CollectionKind.None)
             return GetCollectionArgument(parameter, values, source);
 
-        var missingValue = parameter.DefaultValue ?? (parameter.Optional ? "default" : $"throw new MiniApiParameterBindingException({parameter.Name.ToStringLiteral()}, typeof({parameter.TypeName}), null, {source.ToStringLiteral()})");
+        var missingValue = parameter.DefaultValue
+            ?? (parameter.Optional
+                ? "default"
+                : $"throw new MiniApiParameterBindingException({parameter.Name.ToStringLiteral()}, typeof({parameter.TypeName}), null, {source.ToStringLiteral()})");
+
         var valueName = parameter.Name + "BoundValue";
+
         return $"({values}).FirstOrDefault() is {{ }} {valueName} ? MiniApiValueConverter.Convert<{parameter.TypeName}>({valueName}, {parameter.Name.ToStringLiteral()}, {source.ToStringLiteral()}) : {missingValue}";
     }
 
@@ -251,6 +217,9 @@ internal static class MiniApiEmitter
     {
         var elementType = parameter.ElementTypeName ?? "string";
         var converted = $"({values}).Select(value => ({elementType})MiniApiValueConverter.Convert(value, typeof({elementType}), {parameter.Name.ToStringLiteral()}, {source.ToStringLiteral()})!).ToArray()";
-        return parameter.Collection == CollectionKind.List ? $"new System.Collections.Generic.List<{elementType}>({converted})" : converted;
+
+        return parameter.Collection == CollectionKind.List
+            ? $"new System.Collections.Generic.List<{elementType}>({converted})"
+            : converted;
     }
 }

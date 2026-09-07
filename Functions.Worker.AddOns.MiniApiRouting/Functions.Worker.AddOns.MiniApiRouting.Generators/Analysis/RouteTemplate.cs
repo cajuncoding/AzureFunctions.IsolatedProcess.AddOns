@@ -131,7 +131,7 @@ internal static class RouteTemplate
             );
         }
 
-        if (parts.Length == 2 && !RouteConstraints.IsSupported(parts[1]))
+        if (parts.Length == 2 && !MiniApiRouteConstraint.IsSupported(parts[1]))
         {
             diagnostics.Add(
                 new RouteTemplateDiagnostic(
