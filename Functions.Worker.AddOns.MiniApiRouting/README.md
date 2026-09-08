@@ -142,6 +142,12 @@ internal sealed class WidgetApiFunction(IMiniApiRouter router)
 
 That is the complete routing setup.
 
+#### Async Delegation Pitfall
+
+NOTE: **It is a best practice to delegate directly to the IMiniApiRouter. However, when delegating directly to IMiniApiRouter, either return the router's ValueTask directly or explicitly await it.**
+If you define the Function as `async` and return the router's ValueTask without awaiting it, the Function may behave unexpectedly and be very difficult to notice/debug that the issue
+is simpply a missed `await` . . . because some objects will return fine, but use of others like a direct `HttpResponseData` may fail, etc.
+
 ## Route patterns
 
 ### Root routes
