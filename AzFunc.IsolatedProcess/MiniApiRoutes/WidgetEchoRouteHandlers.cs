@@ -3,6 +3,7 @@ using Functions.Worker.AddOns.MiniApiRouting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using SystemTextJsonHelpers;
 using static AzFunc.IsolatedProcess.MiniApiRoutes.WidgetModels;
 
 namespace AzFunc.IsolatedProcess.MiniApiRoutes;
@@ -10,6 +11,37 @@ namespace AzFunc.IsolatedProcess.MiniApiRoutes;
 [MiniApi]
 internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> logger)
 {
+    //Ensure that EMPTY routes resolve as the Root of the MiniApi route prefix, and that the route is not ambiguous with other routes.✅
+    [MiniApiGet]
+    public async Task<WidgetDto[]> GetAllWidgetsPathsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Simulate some async work...✅
+        await Task.Delay(200, cancellationToken);
+
+        logger.LogInformation("MiniApi widgets empty root route matched.");
+
+        return @"[
+            { ""name"": ""cog-wheel"", ""material"": ""titanium"" },
+            { ""name"": ""sunburst-gear"", ""material"": ""brass"" },
+            { ""name"": ""ironwood-handle"", ""material"": ""ironwood"" },
+            { ""name"": ""quantum-fin"", ""material"": ""carbon-fiber"" },
+            { ""name"": ""ember-core"", ""material"": ""copper"" },
+            { ""name"": ""storm-vane"", ""material"": ""aluminum"" },
+            { ""name"": ""lunar-pivot"", ""material"": ""stainless-steel"" },
+            { ""name"": ""crystal-spindle"", ""material"": ""quartz"" },
+            { ""name"": ""echo-plate"", ""material"": ""nickel"" },
+            { ""name"": ""rift-anchor"", ""material"": ""cast-iron"" },
+            { ""name"": ""aurora-clasp"", ""material"": ""silver"" },
+            { ""name"": ""phoenix-rivet"", ""material"": ""bronze"" },
+            { ""name"": ""glacier-ring"", ""material"": ""sapphire-glass"" },
+            { ""name"": ""nebula-bracket"", ""material"": ""graphene"" },
+            { ""name"": ""atlas-bolt"", ""material"": ""tungsten"" },
+            { ""name"": ""whisper-shaft"", ""material"": ""birch-wood"" }
+        ]".FromJsonTo<WidgetDto[]>() ?? [];
+    }
+
     [MiniApiGet("/{widgetId:int}")]
     public async Task<WidgetDto> EchoWidgetIdAsync(
         int widgetId,

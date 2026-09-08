@@ -145,6 +145,20 @@ public sealed class MiniApiRouteMatcherTests
     }
 
     [Fact]
+    public void TryMatchRejectsNonEmptyPathForEmptyRootRoute()
+    {
+        var matched = MiniApiRouteMatcher.TryMatch(
+            new[] { "widgets" },
+            Array.Empty<MiniApiRouteSegment>(),
+            0,
+            out var routeValues
+        );
+
+        Assert.False(matched);
+        Assert.Empty(routeValues);
+    }
+
+    [Fact]
     public void TryMatchEvaluatesConstraintAfterDecoding()
     {
         // Constraint evaluation must use the decoded route value. This ensures

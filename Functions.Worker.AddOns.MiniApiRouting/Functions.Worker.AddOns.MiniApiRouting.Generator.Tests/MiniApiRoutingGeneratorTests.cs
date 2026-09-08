@@ -128,6 +128,62 @@ public sealed class MiniApiRoutingGeneratorTests
     }
 
     [Fact]
+    public void EmptyMiniApiVerbAttributesGenerateRootRouteDispatch()
+    {
+        var source = $$"""
+            {{Header}}
+
+            [MiniApi]
+            internal sealed class WidgetHandlers
+            {
+                [MiniApiGet]
+                public static string GetAllWidgets() => "ok";
+
+                [MiniApiPost]
+                public static string PostWidget() => "ok";
+
+                [MiniApiPut]
+                public static string PutWidget() => "ok";
+
+                [MiniApiPatch]
+                public static string PatchWidget() => "ok";
+
+                [MiniApiDelete]
+                public static string DeleteWidget() => "ok";
+
+                [MiniApiHead]
+                public static string HeadWidget() => "ok";
+
+                [MiniApiOptions]
+                public static string OptionsWidget() => "ok";
+            }
+
+            internal sealed class WidgetFunction
+            {
+                [Function(nameof(WidgetFunction))]
+                [MiniApiFunction]
+                public void Run() { }
+            }
+            """;
+
+        var result = RunGenerator(source);
+
+        Assert.Empty(result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
+
+        var generated = Assert.Single(result.GeneratedSources.Where(source => source.HintName == "MiniApiGenerated.g.cs"));
+        var text = generated.SourceText.ToString();
+
+        Assert.Contains("private static readonly MiniApiRouteSegment[] Route0Segments = new MiniApiRouteSegment[]", text);
+        Assert.Contains("var path = (relativePath ?? string.Empty).Trim('/');", text);
+
+        foreach (var verb in MiniApiVerbs.All)
+            Assert.Contains($"request.Method.Equals(\"{verb}\", StringComparison.OrdinalIgnoreCase)", text);
+
+        for (var index = 0; index < MiniApiVerbs.All.Length; index++)
+            Assert.Contains($"MiniApiRouteMatcher.TryMatch(segments, Route{index}Segments, 0", text);
+    }
+
+    [Fact]
     public void LiteralAfterOptionalRouteParameterReportsMAR005()
     {
         var source = $$"""

@@ -64,7 +64,7 @@ internal static class MiniApiEmitter
             public ValueTask<object?> DispatchAsync(HttpRequestData request, string? relativePath = null, CancellationToken cancellationToken = default)
             {
                 var group = ResolveGroup(request.FunctionContext.FunctionDefinition.Name);
-                var path = (relativePath ?? request.Url.AbsolutePath).Trim('/');
+                var path = (relativePath ?? string.Empty).Trim('/');
                 var segments = string.IsNullOrEmpty(path) ? Array.Empty<string>() : path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                 return DispatchCoreAsync(group, request, path, segments, cancellationToken);
             }
