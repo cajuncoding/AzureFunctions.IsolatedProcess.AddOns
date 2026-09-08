@@ -4,7 +4,7 @@
 		<TargetFrameworks>net10.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>1.2.0</Version>
+		<Version>1.2.1</Version>
 		<Authors>BBernard / CajunCoding</Authors>
 		<Company>CajunCoding</Company>
 		<Description>Easily add response compression support, via middleware, for Azure Functions (Isolated Process) when using HttpResponseData.</Description>
@@ -15,10 +15,12 @@
 		<PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
 		<PackageReleaseNotes>
-      - Update to support .NET 10.0 and .NET 8.0 Isolated Process Azure Functions.
-      - Sync all AddOns packages to the same version v1.2.0
+			v1.2.1
+      - Fix issue with unncessary processing of empty (zero length) Response Body streams; don't compress if there is nothing to compress.
 
       Previous Release Notes:
+      - Update to support .NET 10.0 and .NET 8.0 Isolated Process Azure Functions.
+      - Sync all AddOns packages to the same version v1.2.0
       - Fix reference issues preventing deployment/publish to Azure Portal due to Error NETSDK1152.
       - Add readme to Nuget
       - Initial Release

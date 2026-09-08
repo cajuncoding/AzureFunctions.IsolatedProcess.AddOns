@@ -43,6 +43,7 @@ namespace Functions.Worker.HttpResponseDataCompression
             if (httpRequestData is not null
                 && httpRequestData.Headers.TryGetValues(CompressionHeaderNames.AcceptEncoding, out var acceptHeader)
                 && context.GetHttpResponseData() is { } httpResponseData
+                && httpResponseData.Body.Length > 0
             ) {
                 var acceptHashSet = acceptHeader.ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var compressedStream = new MemoryStream(); //✅ Compressed (output) stream is NOT disposed because it's assigned to the HttpResponseData to be handled by the Framework...

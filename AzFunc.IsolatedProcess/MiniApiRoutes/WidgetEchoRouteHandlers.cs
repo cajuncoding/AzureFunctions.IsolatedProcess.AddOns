@@ -3,8 +3,11 @@ using Functions.Worker.AddOns.MiniApiRouting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
+using System.Net;
 using SystemTextJsonHelpers;
 using static AzFunc.IsolatedProcess.MiniApiRoutes.WidgetModels;
+using Flurl;
 
 namespace AzFunc.IsolatedProcess.MiniApiRoutes;
 
@@ -40,6 +43,30 @@ internal sealed class WidgetEchoRouteHandlers(ILogger<WidgetEchoRouteHandlers> l
             { ""name"": ""atlas-bolt"", ""material"": ""tungsten"" },
             { ""name"": ""whisper-shaft"", ""material"": ""birch-wood"" }
         ]".FromJsonTo<WidgetDto[]>() ?? [];
+    }
+
+    [MiniApiGet("/search/{widgetName:string}")]
+    public async Task<HttpResponseData> RedirectToSearchForWidgetAsync(
+        string widgetName,
+        HttpRequestData request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var googleSearchText = $"{widgetName} educational facts";
+
+        logger.LogInformation(
+            "MiniApi redirection response using HttpResponseData for Google Search [{GoogleSearchText}].",
+            googleSearchText
+        );
+
+        var response = request.CreateResponse(HttpStatusCode.TemporaryRedirect);
+        var searchUrl = "https://www.google.com/search".AppendQueryParam(new
+        {
+            q = googleSearchText
+        });
+
+        response.Headers.Add(HeaderNames.Location, searchUrl);
+        return response;
     }
 
     [MiniApiGet("/{widgetId:int}")]
