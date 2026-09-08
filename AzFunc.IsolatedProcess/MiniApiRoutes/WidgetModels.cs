@@ -1,11 +1,5 @@
 namespace AzFunc.IsolatedProcess.MiniApiRoutes;
 
-
-internal static class MiniApis
-{
-    internal const string WidgetsApi = "widgets";
-}
-
 public static class WidgetModels
 {
     public sealed record WidgetEchoRequest(

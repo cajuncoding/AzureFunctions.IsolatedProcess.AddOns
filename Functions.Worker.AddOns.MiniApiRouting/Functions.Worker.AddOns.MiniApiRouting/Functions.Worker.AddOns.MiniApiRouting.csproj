@@ -2,11 +2,14 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
     <PackageReleaseNotes>
+      v1.1.2:
+      - Fixed bug in incorrect compile errors for Body deserialization to collection types T[], IList&lt;T&gt;, IEnumerable&lt;T&gt;, ICollection&lt;T&gt;, List&lt;T&gt;, etc.
+      
       v1.1.1:
       - Refactored route matching into a shared runtime implementation instead of emitting matching logic into generated source.
       - Reduced generated router size and complexity.
@@ -16,7 +19,7 @@
       - Added comprehensive route matcher test coverage!
       - Added complete constraint validation coverage
       - Simplified and optimized runtime constraint evaluation.
-      
+
       v1.1.0:
       - Added convenience route attributes: [MiniApiGet], [MiniApiPost], [MiniApiPut], [MiniApiPatch], [MiniApiDelete], [MiniApiHead], and [MiniApiOptions]
       - Expanded generator validation and regression test coverage

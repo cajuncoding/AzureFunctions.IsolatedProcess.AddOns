@@ -40,7 +40,7 @@ internal static class MethodAnalyzer
         var source = GetBindingSource(parameter, bindingType, routeNames, headerAttribute, bodyAttribute, frameworkKind, hasBindingConflict);
         var optional = parameter.NullableAnnotation == NullableAnnotation.Annotated || parameter.HasExplicitDefaultValue;
         var defaultValue = parameter.HasExplicitDefaultValue ? GetLiteral(parameter.ExplicitDefaultValue) : null;
-        var hasUnsupportedCollectionElement = collection != CollectionKind.None && !bindingType.IsScalar();
+        var hasUnsupportedCollectionElement = collection != CollectionKind.None && source != BindingSource.Body && !bindingType.IsScalar();
         var isFrameworkBody = frameworkKind != FrameworkParameterKind.None && bodyAttribute is not null;
         var isUnbound = source == BindingSource.Unbound;
 

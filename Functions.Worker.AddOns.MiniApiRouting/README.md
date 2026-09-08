@@ -282,7 +282,10 @@ Route values take precedence over query-string values with the same name.
 
 ### Framework parameters
 
-RouteHandlers may receive:
+The classes that include MiniApi route handlers/methods fully support Dependency Injection for resolving services, and other
+dependencies as the `[MiniApi]` attribute ensures it is automatically registered as a _transient_ service.
+
+In addition, RouteHandlers (methods) may receive the following as request specific injectable dependency arguments:
 
 ```csharp
 HttpRequestData

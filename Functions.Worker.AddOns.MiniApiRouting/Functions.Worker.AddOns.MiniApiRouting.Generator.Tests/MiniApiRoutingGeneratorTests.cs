@@ -232,6 +232,47 @@ public sealed class MiniApiRoutingGeneratorTests
         );
     }
 
+    [Fact]
+    public void ComplexBodyCollectionsGenerateSuccessfully()
+    {
+        var source = $$"""
+            {{Header}}
+
+            internal sealed class Widget { }
+
+            [MiniApi]
+            internal sealed class Handlers
+            {
+                [MiniApiPost("/array")]
+                public static string PostArray(Widget[] widgets) => "ok";
+
+                [MiniApiPost("/list")]
+                public static string PostList(List<Widget> widgets) => "ok";
+
+                [MiniApiPost("/ilist")]
+                public static string PostIList(IList<Widget> widgets) => "ok";
+
+                [MiniApiPost("/ireadonlylist")]
+                public static string PostIReadOnlyList(IReadOnlyList<Widget> widgets) => "ok";
+
+                [MiniApiPost("/ienumerable")]
+                public static string PostIEnumerable(IEnumerable<Widget> widgets) => "ok";
+
+                [MiniApiPost("/icollection")]
+                public static string PostICollection(ICollection<Widget> widgets) => "ok";
+
+                [MiniApiPost("/ireadonlycollection")]
+                public static string PostIReadOnlyCollection(IReadOnlyCollection<Widget> widgets) => "ok";
+            }
+            """;
+
+        var result = RunGenerator(source);
+
+        Assert.Empty(
+            result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+        );
+    }
+
     public static IEnumerable<object[]> DiagnosticCases()
     {
         yield return Case("MAR001", """internal sealed class Handlers { [MiniApiRouteHandler(MiniApiVerbs.Get)] public static string Get() => "ok"; }""");
