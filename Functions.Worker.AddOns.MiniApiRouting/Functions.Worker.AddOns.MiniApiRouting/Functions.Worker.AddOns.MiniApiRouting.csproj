@@ -2,14 +2,23 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>azure_functions_icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns/tree/main/Functions.Worker.AddOns.MiniApiRouting</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
     <PackageReleaseNotes>
+      v1.1.3 (Non Functional)
+      - FIxed Nuget Package Icon
+      - Fixed Nuget Package Project URL.
+
       v1.1.2:
       - Fixed bug in incorrect compile errors for Body deserialization to collection types T[], IList&lt;T&gt;, IEnumerable&lt;T&gt;, ICollection&lt;T&gt;, List&lt;T&gt;, etc.
-      
+
       v1.1.1:
       - Refactored route matching into a shared runtime implementation instead of emitting matching logic into generated source.
       - Reduced generated router size and complexity.
@@ -40,10 +49,6 @@
       - Supports route, query-string, header, and JSON request-body binding.
       - Supports multiple Mini APIs, generated dispatch, DI registration, diagnostics, and flexible handler return values.
     </PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
     <PackageTags>Azure, Functions, Worker, Isolated, MiniApi, MinimalApi, Routing, SourceGenerator, One, Single, Function, Many, Multiple, API, Routes</PackageTags>
   </PropertyGroup>
   <ItemGroup>
@@ -57,5 +62,6 @@
   <ItemGroup>
     <None Include="../README.md" Link="README.md" Pack="true" PackagePath="/" />
     <None Include="../Functions.Worker.AddOns.MiniApiRouting.Generators/bin/$(Configuration)/netstandard2.0/Functions.Worker.AddOns.MiniApiRouting.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\..\azure_functions_icon.png" Link="azure_functions_icon.png"  Pack="true" Visible="true" PackagePath="" />
   </ItemGroup>
 </Project>
