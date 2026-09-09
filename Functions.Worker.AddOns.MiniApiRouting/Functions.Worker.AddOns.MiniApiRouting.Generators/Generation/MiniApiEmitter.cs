@@ -74,8 +74,37 @@ internal static class MiniApiEmitter
                 var services = request.FunctionContext.InstanceServices;
         """);
 
-        for (var index = 0; index < routes.Count; index++)
-            AppendRoute(source, routes[index], index);
+        var indexedRoutes = routes
+            .Select((route, index) => new { Route = route, Index = index })
+            .ToArray();
+
+        var groupCount = 0;
+        foreach (var group in indexedRoutes.GroupBy(route => route.Route.Group, StringComparer.OrdinalIgnoreCase))
+        {
+            var groupIfOrElseIf = groupCount++ == 0 ? "if" : "else if";
+            source.AppendLine(
+                $"        {groupIfOrElseIf} (group.Equals({group.Key.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase))"
+            );
+            source.AppendLine("        {");
+
+            var methodCount = 0;
+            foreach (var method in group.GroupBy(route => route.Route.Verb, StringComparer.OrdinalIgnoreCase))
+            {
+                var ifOrElseIf = methodCount++ == 0 ? "if" : "else if";
+                source.AppendLine(
+                    $"            {ifOrElseIf} (request.Method.Equals({method.Key.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase))"
+                );
+                source.AppendLine("            {");
+
+                var routeCount = 0;
+                foreach (var route in method)
+                    AppendRoute(source, route.Route, route.Index, routeCount++, "                ");
+
+                source.AppendLine("            }");
+            }
+
+            source.AppendLine("        }");
+        }
 
         source.AppendLine("        throw new MiniApiRouteNotFoundException(request.Method, path);");
         source.AppendLines("""
@@ -84,15 +113,17 @@ internal static class MiniApiEmitter
         """);
     }
 
-    private static void AppendRoute(StringBuilder source, RouteModel route, int routeIndex)
+    private static void AppendRoute(StringBuilder source, RouteModel route, int routeIndex, int routeCounter, string indent)
     {
         var requiredSegments = route.Segments.TakeWhile(segment => !segment.IsOptional).Count();
         var routeValuesName = $"routeValues{routeIndex}";
+        var bodyIndent = indent + "    ";
+        var tryMatchIfOrElseIf = routeCounter == 0 ? "if" : "else if";
 
         source.AppendLine(
-            $"        if (group.Equals({route.Group.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && request.Method.Equals({route.Verb.ToStringLiteral()}, StringComparison.OrdinalIgnoreCase) && MiniApiRouteMatcher.TryMatch(segments, Route{routeIndex}Segments, {requiredSegments}, out var {routeValuesName}))"
+            $"{indent}{tryMatchIfOrElseIf} (MiniApiRouteMatcher.TryMatch(segments, Route{routeIndex}Segments, {requiredSegments}, out var {routeValuesName}))"
         );
-        source.AppendLine("        {");
+        source.AppendLine($"{indent}{{");
 
         var bodyParameter = route.Parameters.SingleOrDefault(parameter => parameter.Source == BindingSource.Body);
 
@@ -101,16 +132,16 @@ internal static class MiniApiEmitter
             var nullableBodySuffix = bodyParameter.IsNullable ? "?" : string.Empty;
             var nullForgivingSuffix = bodyParameter.IsNullable ? string.Empty : "!";
 
-            source.AppendLine("            var bodyDeserializer = services.GetRequiredService<IMiniApiRequestBodyDeserializer>();");
+            source.AppendLine($"{bodyIndent}var bodyDeserializer = services.GetRequiredService<IMiniApiRequestBodyDeserializer>();");
             source.AppendLine(
-                $"            var body = ({bodyParameter.TypeName}{nullableBodySuffix})(await bodyDeserializer.DeserializeAsync(request, typeof({bodyParameter.TypeName}), cancellationToken)){nullForgivingSuffix};"
+                $"{bodyIndent}var body = ({bodyParameter.TypeName}{nullableBodySuffix})(await bodyDeserializer.DeserializeAsync(request, typeof({bodyParameter.TypeName}), cancellationToken)){nullForgivingSuffix};"
             );
         }
 
         var invocation = route.GetInvocation(routeValuesName);
 
-        source.AppendLine($"            {GetReturnStatement(route.ReturnKind, invocation)}");
-        source.AppendLine("        }");
+        source.AppendLine($"{bodyIndent}{GetReturnStatement(route.ReturnKind, invocation)}");
+        source.AppendLine($"{indent}}}");
     }
 
     private static void AppendFunctionGroups(StringBuilder source, IEnumerable<FunctionModel> functions)

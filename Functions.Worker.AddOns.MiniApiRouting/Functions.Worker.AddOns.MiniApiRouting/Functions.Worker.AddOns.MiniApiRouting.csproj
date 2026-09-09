@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <PackageId>Functions.Worker.AddOns.MiniApiRouting</PackageId>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <Authors>BBernard / CajunCoding</Authors>
     <Company>CajunCoding</Company>
     <Description>Compile-time generated Mini APIs for Azure Functions isolated worker -- One Function many routes!.</Description>
@@ -12,6 +12,11 @@
     <PackageProjectUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns/tree/main/Functions.Worker.AddOns.MiniApiRouting</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cajuncoding/AzureFunctions.IsolatedProcess.AddOns</RepositoryUrl>
     <PackageReleaseNotes>
+      v1.1.5
+      - Improve Generated code performance
+      - Eliminated duplicated grouping name, http verb, and route matching logic in Generated Code to improve performance and reduce generated code size.
+      - Streamlined generated code if conditions to now have if/else conditions to improve runtime performance and eliminate unnecessary route matching checks.
+
       v1.1.4
       - Fix bug with empty path segements for MiniApi Route Attribute (e.g. with no segments/path [MiniApiGet]) not resolving to the MiniApi Root route (e.g. Function Base Route).
 

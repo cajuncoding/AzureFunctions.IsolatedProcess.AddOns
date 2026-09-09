@@ -72,6 +72,10 @@ public sealed class MiniApiRoutingGeneratorTests
 
         Assert.Contains("internal sealed class GeneratedMiniApiRouter", text);
         Assert.Contains("MiniApiRouteMatcher.TryMatch", text);
+        Assert.Contains("if (group.Equals(\"widgets\", StringComparison.OrdinalIgnoreCase))", text);
+        Assert.Contains("if (request.Method.Equals(\"GET\", StringComparison.OrdinalIgnoreCase))", text);
+        Assert.DoesNotContain(" && request.Method.Equals", text);
+        Assert.DoesNotContain(" && MiniApiRouteMatcher.TryMatch", text);
         Assert.Contains("internal static class GeneratedMiniApiServiceRegistration", text);
         Assert.Contains("[ModuleInitializer]", text);
         Assert.Contains("MiniApiServiceCollectionExtensions.RegisterGeneratedMiniApiRouting(AddGeneratedMiniApiRouting)", text);
