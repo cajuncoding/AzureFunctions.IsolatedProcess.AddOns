@@ -13,13 +13,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.HttpRespon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.Common", "Functions.Worker.AddOns.Common\Functions.Worker.AddOns.Common.csproj", "{05A322FE-CA7B-46DF-B149-A9F306F9AAD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.MiniApiRouting", "Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.csproj", "{1AF5060B-44F8-10B7-8F4F-A0E9645BF7E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.MiniApiRouting", "Functions.Worker.MiniApiRouting\Functions.Worker.MiniApiRouting\Functions.Worker.MiniApiRouting.csproj", "{1AF5060B-44F8-10B7-8F4F-A0E9645BF7E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.MiniApiRouting.Generators", "Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.Generators\Functions.Worker.AddOns.MiniApiRouting.Generators.csproj", "{A7BA8F26-D93A-C9A6-1C3F-6831EEBF1BC2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.MiniApiRouting.Generators", "Functions.Worker.MiniApiRouting\Functions.Worker.MiniApiRouting.Generators\Functions.Worker.MiniApiRouting.Generators.csproj", "{A7BA8F26-D93A-C9A6-1C3F-6831EEBF1BC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.MiniApiRouting.Generator.Tests", "Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.Generator.Tests\Functions.Worker.AddOns.MiniApiRouting.Generator.Tests.csproj", "{3BD77D2F-EAC5-F295-2B41-F819C4DD77A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.MiniApiRouting.Generator.Tests", "Functions.Worker.MiniApiRouting\Functions.Worker.MiniApiRouting.Generator.Tests\Functions.Worker.MiniApiRouting.Generator.Tests.csproj", "{3BD77D2F-EAC5-F295-2B41-F819C4DD77A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.AddOns.MiniApiRouting.Tests", "Functions.Worker.AddOns.MiniApiRouting\Functions.Worker.AddOns.MiniApiRouting.Tests\Functions.Worker.AddOns.MiniApiRouting.Tests.csproj", "{62576296-B88E-E983-2B45-243F38C79EB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Worker.MiniApiRouting.Tests", "Functions.Worker.MiniApiRouting\Functions.Worker.MiniApiRouting.Tests\Functions.Worker.MiniApiRouting.Tests.csproj", "{62576296-B88E-E983-2B45-243F38C79EB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MiniApiRouting", "MiniApiRouting", "{6DB83D37-DD36-479E-A72F-3D3958D08CBD}"
 EndProject

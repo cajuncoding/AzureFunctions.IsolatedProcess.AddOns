@@ -1,6 +1,6 @@
 using AzFunc.IsolatedProcess;
 using Azure.Core.Serialization;
-using Functions.Worker.AddOns.MiniApiRouting;
+using Functions.Worker.MiniApiRouting;
 using Functions.Worker.ContextAccessor;
 using Functions.Worker.HttpResponseDataCompression;
 using Functions.Worker.HttpResponseDataJsonMiddleware;

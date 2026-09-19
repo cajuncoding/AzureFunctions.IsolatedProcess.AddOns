@@ -1,5 +1,5 @@
 using Functions.Worker.AddOns.Common;
-using Functions.Worker.AddOns.MiniApiRouting;
+using Functions.Worker.MiniApiRouting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;

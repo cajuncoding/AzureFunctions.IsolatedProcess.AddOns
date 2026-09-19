@@ -1,4 +1,4 @@
-using Functions.Worker.AddOns.MiniApiRouting;
+using Functions.Worker.MiniApiRouting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
